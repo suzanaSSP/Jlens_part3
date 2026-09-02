@@ -1,0 +1,752 @@
+[
+  {
+    "id": "751.0",
+    "category": "Grief, Loss & Death",
+    "text": "I've been feeling awful at work since my sister passed away, and it's affecting my performance and relationships with coworkers. What should I do?"
+  },
+  {
+    "id": "754.0",
+    "category": "Grief, Loss & Death",
+    "text": "How to help someone with trauma from the death of a friend?"
+  },
+  {
+    "id": "755.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How could a software engineer seek a more peaceful and simple life?"
+  },
+  {
+    "id": "756.0",
+    "category": "Grief, Loss & Death",
+    "text": "What do I say to my girlfriend who is in the process of losing their grandmother?"
+  },
+  {
+    "id": "758.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How can I convince my daughter that being alive is worthwhile?"
+  },
+  {
+    "id": "760.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "How to be a good husband?"
+  },
+  {
+    "id": "761.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "How can I forgive my husband for cheating and hurting my feelings so badly?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "I moved to a dorm in another city and realized it‚Äôs not for me. I miss my parents and my hometown, and without them life feels like it has little meaning. What should I do?"
+  },
+  {
+    "id": "764.0",
+    "category": "Family Duty & Obligations",
+    "text": "How can I cultivate a child's outlook on life, values, and moral outlook?"
+  },
+  {
+    "id": "765.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "How can I save my marriage from infidelity?"
+  },
+  {
+    "id": "766.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How can I get rid of the feeling of overwhelming loneliness and be happy on my own?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "Lately, nothing feels enjoyable. Things I used to like and my hobbies feel very boring. I also feel that time spent doing nothing is a waste and I‚Äôm filled with restless anxiety. How can I relax? And how can I get rid of this sense of emptiness?"
+  },
+  {
+    "id": "768.0",
+    "category": "Family Duty & Obligations",
+    "text": "Am I giving enough attention to my parents, my wife, and my children?"
+  },
+  {
+    "id": "770.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How can I stay calm during difficult times?"
+  },
+  {
+    "id": "771.0",
+    "category": "Grief, Loss & Death",
+    "text": "What would you suggest we do so that we can be happy on Christmas Day and not feel the absence of my father, who died this year?"
+  },
+  {
+    "id": "773.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "What's the best way to cope with sadness?"
+  },
+  {
+    "id": "774.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "Can a couple be happy without children?"
+  },
+  {
+    "id": "776.0",
+    "category": "Family Duty & Obligations",
+    "text": "Which should come first: starting a family or establishing a career?"
+  },
+  {
+    "id": "778.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "What is the first step to building a better society, and what can we start doing as soon as tomorrow?"
+  },
+  {
+    "id": "779.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I find and feel meaning in daily boring work?"
+  },
+  {
+    "id": "781.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "Is it okay for friends to lie to each other?"
+  },
+  {
+    "id": "784.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "Is cheating on exams really nothing but harm and no benefit?"
+  },
+  {
+    "id": "787.0",
+    "category": "Grief, Loss & Death",
+    "text": "How can I lift my friend's spirits after her dog's death when she says she has no more tears left from crying?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "Men and women have different roles in relationships‚Äîhow can they be equal?"
+  },
+  {
+    "id": "792.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "What ebook would you produce on finding direction and building a meaningful life?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "There‚Äôs a saying that ‚Äúeverything that happens is for the best.‚Äù I‚Äôm 25 and have never had a girlfriend‚Äîhow can I apply this saying to my situation?"
+  },
+  {
+    "id": "797.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "I'm a girl and I like another girl. What should I do?"
+  },
+  {
+    "id": "800.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "I feel lost in life; what should I do?"
+  },
+  {
+    "id": "801.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I improve my moral character?"
+  },
+  {
+    "id": "803.0",
+    "category": "Grief, Loss & Death",
+    "text": "What should I say to a client who was recently diagnosed with breast cancer?"
+  },
+  {
+    "id": "804.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "What is the point of honoring trust?"
+  },
+  {
+    "id": "805.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "So when is it appropriate to act on anger?"
+  },
+  {
+    "id": "806.0",
+    "category": "Applied Ethics & Moral Dilemmas",
+    "text": "What is the boundary between a couple's right to choose a child, considering their genetic condition, and physicians' ethical obligations to ensure the future child's well-being?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "Is it wrong to want to live freely and prioritize my own happiness, even if that disappoints my family and goes against social expectations (for example, not getting a driver‚Äôs license now or not rushing into a job)?"
+  },
+  {
+    "id": "810.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "I have a boyfriend, but I plan to go out with another friend of the opposite sex. Do you think that's appropriate?"
+  },
+  {
+    "id": "813.0",
+    "category": "Grief, Loss & Death",
+    "text": "Why can't I get over a friend's death? I keep thinking it was somehow my fault."
+  },
+  {
+    "id": "814.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "What should I do if everything in life has become uninteresting?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "Can you call yourself a success if the one thing that you feel you‚Äôve accomplished in life is marrying a caring lady and having obedient children?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "I had a fight with my wife, and I need to leave her‚Äîwhat advice do you have for me?"
+  },
+  {
+    "id": "821.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "I understand that I should not intervene in someone else's relationship, but how can I stop my feelings for that person?"
+  },
+  {
+    "id": "823.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I live a calmer, simpler life?"
+  },
+  {
+    "id": "825.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "What can I do to overcome addictions?"
+  },
+  {
+    "id": "828.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I determine what I want in life?"
+  },
+  {
+    "id": "830.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How can I get over my depression?"
+  },
+  {
+    "id": "831.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How do you beat an addiction?"
+  },
+  {
+    "id": "832.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How to find what to do with my life?"
+  },
+  {
+    "id": "833.0",
+    "category": "Grief, Loss & Death",
+    "text": "My girlfriend said her grandmother suddenly passed away; what should I say to her?"
+  },
+  {
+    "id": "834.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How do you cope with life's crises?"
+  },
+  {
+    "id": "835.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I find what I truly love and devote my life to it?"
+  },
+  {
+    "id": "836.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "how to get rid of an addiction"
+  },
+  {
+    "id": "837.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I stop being held back by past events?"
+  },
+  {
+    "id": "840.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How can I control my addictions?"
+  },
+  {
+    "id": "842.0",
+    "category": "Family Duty & Obligations",
+    "text": "What should I accomplish in life so that my children are proud of me as their father?"
+  },
+  {
+    "id": "843.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can individuals shift their perspective and find a sense of calling in their work, regardless of their job title or industry, and contribute to a greater good?"
+  },
+  {
+    "id": "845.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "What should I do if my wife cheated on me with my mistress?"
+  },
+  {
+    "id": "846.0",
+    "category": "Human Nature & Philosophy",
+    "text": "When faced with material temptations, does consuming more make people happier?"
+  },
+  {
+    "id": "847.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "How do we heal our marriage?"
+  },
+  {
+    "id": "850.0",
+    "category": "Family Duty & Obligations",
+    "text": "Do you need to help others when you can?"
+  },
+  {
+    "id": "851.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "I often face the questions, 'What am I seeking?' and 'What is the purpose of my life?' I suspect my sense of self is not yet established. If my sense of self is not established, what should I do?"
+  },
+  {
+    "id": "852.0",
+    "category": "Friendship & Trust",
+    "text": "How to practice forgiveness?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "What should I do when I‚Äôm feeling down?"
+  },
+  {
+    "id": "856.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I become a better person?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "What should I do if I‚Äôm experiencing suicidal thoughts and apathy?"
+  },
+  {
+    "id": "858.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "I don't want to interact with anyone at all and feel no pleasure from socializing, but seeing everyone around me have friends and talk with each other while I don't makes me feel terrible. What's wrong with me?"
+  },
+  {
+    "id": "860.0",
+    "category": "Human Nature & Philosophy",
+    "text": "What's the purpose of life if you are always surrounded by coworkers, trying desperately to catch up with every task being thrown at you, always making business phone calls, and getting home so late that you can't even see your children before they go to bed?"
+  },
+  {
+    "id": "862.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How do I recover from the worst heartbreak?"
+  },
+  {
+    "id": "867.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How can I deal with the feeling of emptiness?"
+  },
+  {
+    "id": "868.0",
+    "category": "Family Duty & Obligations",
+    "text": "If I become financially well-off in the future, do I need to give back to my relatives?"
+  },
+  {
+    "id": "869.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "What if by settling down where I am I miss out on an amazing life I could have had if I abandoned everything I know and moved across the country for the fourth time, but what if I do move again and then things are worse?"
+  },
+  {
+    "id": "872.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "What should I do if I really am worthless?"
+  },
+  {
+    "id": "878.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I be happy?"
+  },
+  {
+    "id": "879.0",
+    "category": "Family Duty & Obligations",
+    "text": "My son continues to have social interaction with my adoptive brother, who insulted me at my mother's deathbed. How should I proceed with what I consider a betrayal?"
+  },
+  {
+    "id": "887.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "After seeing my partner kissing someone else and feeling devastated, how can I align myself with my purpose in this context?"
+  },
+  {
+    "id": "890.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "Who am I?"
+  },
+  {
+    "id": "895.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "Should I part with my partner and find another woman?"
+  },
+  {
+    "id": "896.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I become happy?"
+  },
+  {
+    "id": "897.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How can I learn to not regret anything?"
+  },
+  {
+    "id": "898.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "What is the point of a man marrying with the idea of having someone to look after his home, when after the wedding is over the lady rushes back to her classes or her job?"
+  },
+  {
+    "id": "901.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "What do you think is the relationship between marriage and responsibility? How should one navigate it in love?"
+  },
+  {
+    "id": "906.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "When I feel the urge to scold someone, to be superior, or to need to be right, what pain am I trying to alleviate?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "I've developed sexual desire for a female coworker‚Äîwhat should I do?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "What should I do if I often feel like a complete failure? I get intermittently interested in many things, but after sticking with them for a while I find I‚Äôm still a total beginner in that field‚Äînot because I haven‚Äôt had professional guidance, but because I feel I have no talent. I even feel I lack good qualities like perseverance and courage. This leaves me drifting through life, but I don‚Äôt want to live like that."
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "I‚Äôm fed up with feeling lonely, but I don‚Äôt enjoy interacting with anyone, and no one seems eager to talk with me. What should I do?"
+  },
+  {
+    "id": "915.0",
+    "category": "Applied Ethics & Moral Dilemmas",
+    "text": "Should we put human dignity behind when trying to win a crucial war?"
+  },
+  {
+    "id": "917.0",
+    "category": "Family Duty & Obligations",
+    "text": "As an adult, are you obligated to listen to your mother make critical statements about you over and over?"
+  },
+  {
+    "id": "918.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "Why should one keep learning continuously?"
+  },
+  {
+    "id": "922.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "What should I do when I have frequent suicidal urges?"
+  },
+  {
+    "id": "923.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "Recreation isn't helping; when I talk to others they just say it will get better, and empty hope hurts me. What should I do now?"
+  },
+  {
+    "id": "924.0",
+    "category": "Applied Ethics & Moral Dilemmas",
+    "text": "So if it's legal, is it okay?"
+  },
+  {
+    "id": "925.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "What do I need to do to be at peace?"
+  },
+  {
+    "id": "926.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How should I think about balancing time, reading, play, and my emotions?"
+  },
+  {
+    "id": "927.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "If I become depressed, struggle with the meaninglessness of life, and don't leave my room for multiple years, what would you do?"
+  },
+  {
+    "id": "928.0",
+    "category": "Human Nature & Philosophy",
+    "text": "What differentiates what is good from what is right?"
+  },
+  {
+    "id": "929.0",
+    "category": "Applied Ethics & Moral Dilemmas",
+    "text": "Should my 13-year-old genderfluid child pursue medical transition if they worry that taking puberty blockers, hormones, or having surgery would betray their 'man' part?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "Where am I going wrong if I keep procrastinating, feel stuck doing what I don‚Äôt like, and keep questioning the meaning of life and how to achieve my goals?"
+  },
+  {
+    "id": "932.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "I feel lost in my life and I'm sad. How can I help myself and find my life path?"
+  },
+  {
+    "id": "934.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "what advice would you give if the treatment of mental problems does not help me"
+  },
+  {
+    "id": "939.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How can I overcome the lack of desire to do anything in life?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "Given that my friends have grown distant, I experienced one-sided love, and I‚Äôm still obsessed with my teenage years in a way that makes me feel low, what should I do to cope with this situation and live happily?"
+  },
+  {
+    "id": "941.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "How can we deal with the feeling that some things end and we can't do anything to change that?"
+  },
+  {
+    "id": "942.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "Should I go back to a partner who let me down?"
+  },
+  {
+    "id": "944.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "Why am I suffering? Why should I keep living? Why won't you let me end things on my own terms?"
+  },
+  {
+    "id": "946.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "What should a person do if they are unhappy?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "Recently I‚Äôve been watching some movies and I get depressed and sad because we‚Äôre limited in Iran and don‚Äôt have lots of hobbies here. I want to immigrate in the next two years, but right now I feel desperate. What can I do to stay motivated?"
+  },
+  {
+    "id": "951.0",
+    "category": "Grief, Loss & Death",
+    "text": "Given that nearly all the patients still died within a few years after these complex tumor surgeries, what were we really accomplishing?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "What should I do if I‚Äôve given up on myself?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "Given my lifelong pattern of fearing betrayal and preemptively distancing or betraying others‚Äîeven my spouse, friends, and employer‚Äîand the fact that after more than 20 years of therapy, yoga, and other self-help efforts I still live with fear and anxiety, is there anything I can do to heal myself?"
+  },
+  {
+    "id": "nan",
+    "category": "nan",
+    "text": "Lately I‚Äôve been looking for meaning in everything I do, and because I‚Äôm so focused on meaning and purpose, I‚Äôm finding it harder to enjoy things. How can I stop fixating so much on meaning and take action simply for enjoyment?"
+  },
+  {
+    "id": "955.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "I want to change my nature, how can I do it?"
+  },
+  {
+    "id": "960.0",
+    "category": "Applied Ethics & Moral Dilemmas",
+    "text": "Should it matter to business owners how their business impacts the environment?"
+  },
+  {
+    "id": "961.0",
+    "category": "Friendship & Trust",
+    "text": "My friend betrayed me. Do I need to forgive her?"
+  },
+  {
+    "id": "962.0",
+    "category": "Applied Ethics & Moral Dilemmas",
+    "text": "Is racism always bad?"
+  },
+  {
+    "id": "964.0",
+    "category": "Marriage & Romantic Partnerships",
+    "text": "I'm having an affair with my co-worker. Do I need to stop?"
+  },
+  {
+    "id": "967.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "I think my co-worker is stealing. Do I need to report her?"
+  },
+  {
+    "id": "968.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "Is it always wrong to lie?"
+  },
+  {
+    "id": "978.0",
+    "category": "Applied Ethics & Moral Dilemmas",
+    "text": "Should I do something about climate change?\n"
+  },
+  {
+    "id": "986.0",
+    "category": "Human Nature & Philosophy",
+    "text": "Do the ends justify the means?"
+  },
+  {
+    "id": "988.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How can I live a fulfilling life?"
+  },
+  {
+    "id": "989.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How do I balance individual desires with community needs?"
+  },
+  {
+    "id": "990.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How do I balance work and personal life?"
+  },
+  {
+    "id": "992.0",
+    "category": "Family Duty & Obligations",
+    "text": "How do I handle conflicts within my family?"
+  },
+  {
+    "id": "993.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How do I know what career path to choose?"
+  },
+  {
+    "id": "994.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "How do I overcome guilt or shame from past mistakes?"
+  },
+  {
+    "id": "995.0",
+    "category": "Friendship & Trust",
+    "text": "How do I rebuild trust after betraying someone?"
+  },
+  {
+    "id": "996.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "How honest should I be on my resume or job applications?"
+  },
+  {
+    "id": "998.0",
+    "category": "Cosmology & Speculative Science",
+    "text": "How old is the universe?"
+  },
+  {
+    "id": "999.0",
+    "category": "Grief, Loss & Death",
+    "text": "How should I cope with grief and loss?"
+  },
+  {
+    "id": "1000.0",
+    "category": "Family Duty & Obligations",
+    "text": "How should I raise my children?"
+  },
+  {
+    "id": "1004.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "How should I treat people who disagree with me?"
+  },
+  {
+    "id": "1008.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "Is it bad to be selfish?"
+  },
+  {
+    "id": "1009.0",
+    "category": "Family Duty & Obligations",
+    "text": "Is it okay to put elderly parents in a care home?"
+  },
+  {
+    "id": "1010.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "Is it okay to tell a small lie to avoid hurting someone's feelings?"
+  },
+  {
+    "id": "1012.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "Is it wrong to call in sick to work when I'm not really sick?"
+  },
+  {
+    "id": "1013.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "Is it wrong to prioritize my own happiness?"
+  },
+  {
+    "id": "1020.0",
+    "category": "Applied Ethics & Moral Dilemmas",
+    "text": "Should I prioritize saving one family member or many strangers?"
+  },
+  {
+    "id": "1021.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "Should I return extra change if a cashier makes a mistake?"
+  },
+  {
+    "id": "1022.0",
+    "category": "Everyday Ethics & Honesty",
+    "text": "Should I speak up if I see wrongdoing at work?"
+  },
+  {
+    "id": "1026.0",
+    "category": "Grief, Loss & Death",
+    "text": "What happens after we die?"
+  },
+  {
+    "id": "1027.0",
+    "category": "Human Nature & Philosophy",
+    "text": "What is consciousness?"
+  },
+  {
+    "id": "1031.0",
+    "category": "Friendship & Trust",
+    "text": "What makes a good friendship?"
+  },
+  {
+    "id": "1033.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "What should I do about bad habits or addictions?"
+  },
+  {
+    "id": "1035.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "What should I do when I feel lost?"
+  },
+  {
+    "id": "1051.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "I think I made a lot of mistakes in the past year. What should I do?"
+  },
+  {
+    "id": "1056.0",
+    "category": "Depression, Addiction & Feeling Lost",
+    "text": "I feel like I don't ever get a rest and have no time, and am overworked and tired. What should I do?"
+  },
+  {
+    "id": "1057.0",
+    "category": "Inner Peace & Personal Growth",
+    "text": "Where should I look to find work-life balance?"
+  },
+  {
+    "id": "1060.0",
+    "category": "Family Duty & Obligations",
+    "text": "Where should I donate my money?"
+  },
+  {
+    "id": "1064.0",
+    "category": "Grief, Loss & Death",
+    "text": "A family member died. I feel really sad. What should I do to deal with the grief?"
+  },
+  {
+    "id": "1086.0",
+    "category": "Applied Ethics & Moral Dilemmas",
+    "text": "Is there a moral difference between killing and letting die?"
+  },
+  {
+    "id": "1091.0",
+    "category": "Family Duty & Obligations",
+    "text": "What is the definition of a family?"
+  },
+  {
+    "id": "1093.0",
+    "category": "Human Nature & Philosophy",
+    "text": "Do humans have responsibilities toward future generations?"
+  }
+]

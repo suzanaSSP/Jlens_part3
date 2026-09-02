@@ -1,0 +1,544 @@
+<title>Benchmark J-Space Category Streams</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --surface-2: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --gridline: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --hue1: #2a78d6; --hue2: #e34948; --hue3: #008300; --hue4: #e87ba4;
+    --hue5: #eda100; --hue6: #1baf7a; --hue7: #eb6834;
+    --cell-other: #9c9b93;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--text-primary);
+    background: var(--surface-2);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19; --surface-2: #0d0d0d;
+      --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781;
+      --gridline: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+      --hue1: #3987e5; --hue2: #e66767; --hue3: #008300; --hue4: #d55181;
+      --hue5: #c98500; --hue6: #199e70; --hue7: #d95926;
+      --cell-other: #83817a;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19; --surface-2: #0d0d0d;
+    --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781;
+    --gridline: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+    --hue1: #3987e5; --hue2: #c98500; --hue3: #d55181; --hue4: #008300;
+    --hue5: #e66767; --hue6: #d95926; --hue7: #199e70;
+    --cell-other: #83817a;
+  }
+
+  * { box-sizing: border-box; }
+  .viz-root { padding: 24px; max-width: 100%; }
+  .viz-header h1 { font-size: 19px; font-weight: 650; margin: 0 0 4px; }
+  .viz-header p { font-size: 13px; color: var(--text-secondary); margin: 0 0 18px; max-width: 82ch; line-height: 1.5; }
+
+  .controls { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .controls label { font-size: 12px; color: var(--text-secondary); padding-top: 7px; }
+  .controls select {
+    font: inherit; font-size: 13px; color: var(--text-primary);
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px; max-width: 520px;
+  }
+  .q-meta { font-size: 12px; color: var(--text-secondary); margin: -6px 0 14px; max-width: 82ch; line-height: 1.5; }
+  .q-meta .cat-tag {
+    display: inline-block; font-size: 11px; font-weight: 600; color: var(--text-primary);
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 5px;
+    padding: 2px 7px; margin-right: 8px;
+  }
+
+  .charts-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .chart-card {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px 12px; position: relative; flex: 1 1 380px; min-width: 320px;
+  }
+  .chart-card.full { flex-basis: 100%; }
+  .chart-card h2 { font-size: 12.5px; font-weight: 650; margin: 0 0 2px; color: var(--text-secondary); }
+  .axis-caption { font-size: 10.5px; color: var(--text-muted); margin: 0 0 8px; }
+  .chart-card svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .no-data { font-size: 12.5px; color: var(--text-muted); padding: 40px 0; text-align: center; }
+  .axis-tick { font-size: 10px; fill: var(--text-muted); }
+  .axis-label { font-size: 10.5px; fill: var(--text-secondary); }
+  .axis-line { stroke: var(--baseline); stroke-width: 1; }
+  .grid-line { stroke: var(--gridline); stroke-width: 1; }
+  .crosshair { stroke: var(--text-secondary); stroke-width: 1; pointer-events: none; }
+  .band { stroke: var(--surface-1); stroke-width: 1.5; }
+  .cat-label { font-size: 11px; fill: var(--text-secondary); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 12px; font-size: 11.5px; color: var(--text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+
+  .tooltip {
+    position: fixed; z-index: 50; background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; font-size: 12px; min-width: 200px; max-width: 300px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18); pointer-events: none;
+  }
+  .tooltip[hidden] { display: none; }
+  .tooltip .t-head { font-weight: 650; font-size: 12px; color: var(--text-primary); margin-bottom: 6px; }
+  .tooltip .t-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
+  .tooltip .t-key { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+  .tooltip .t-val { font-weight: 650; color: var(--text-primary); margin-left: auto; padding-left: 10px; font-variant-numeric: tabular-nums; }
+  .tooltip .t-name { color: var(--text-secondary); }
+
+  .n-tag { font-size: 11px; color: var(--text-muted); }
+</style>
+
+<div class="viz-root">
+  <div class="viz-header">
+    <h1>Benchmark J-Space Category Streams</h1>
+    <p>For each benchmark question, how similar the model's internal j-space output is to each of 7 tracked
+      category ground truths (plus "Other," the summed baseline categories), across normalized token position
+      through <strong>thought</strong> and <strong>answer</strong>. Similarity is <code>1 &minus; Jensen-Shannon
+      divergence</code> to that category's ground-truth distribution. Pick a question below, or start with the
+      aggregate across all questions and the ranked religion-signal overview.</p>
+    <p id="metricNote" style="display:none">Raw similarity curves move almost in lockstep across categories: the
+      same per-position distribution is compared against every ground truth, and generic/high-frequency tokens
+      overlap all of them, so a confident or diffuse position shifts every category's similarity together.
+      <strong>Differential</strong> subtracts the mean of the 3 baseline categories (Law/Politics, Technology,
+      Science &mdash; chosen for having no plausible category-specific content) at each position, isolating
+      signal specific to that category from this shared drift.</p>
+  </div>
+
+  <div class="controls">
+    <label for="viewSelect">View</label>
+    <select id="viewSelect"></select>
+    <label for="metricSelect" id="metricLabel">Metric</label>
+    <select id="metricSelect">
+      <option value="raw">Raw similarity (stacked stream)</option>
+      <option value="diff">Differential (category &minus; baseline mean)</option>
+    </select>
+  </div>
+  <div class="q-meta" id="qMeta"></div>
+
+  <div class="charts-row" id="chartsRow">
+    <div class="chart-card" id="thoughtCard">
+      <h2>Thought <span class="n-tag" id="thoughtN"></span></h2>
+      <div class="axis-caption" id="thoughtCaption">Y: summed category similarity (1 &minus; JS divergence)</div>
+      <svg id="thoughtChart" viewBox="0 0 460 320" role="img" aria-label="Category similarity stream, thought segment"></svg>
+    </div>
+    <div class="chart-card" id="answerCard">
+      <h2>Answer <span class="n-tag" id="answerN"></span></h2>
+      <div class="axis-caption" id="answerCaption">Y: summed category similarity (1 &minus; JS divergence)</div>
+      <svg id="answerChart" viewBox="0 0 460 320" role="img" aria-label="Category similarity stream, answer segment"></svg>
+    </div>
+    <div class="chart-card full" id="rankedCard" style="display:none">
+      <h2>Religion delta by question, sorted by answer segment</h2>
+      <svg id="rankedChart" viewBox="0 0 900 900" role="img" aria-label="Ranked religion signal per question"></svg>
+    </div>
+  </div>
+  <div class="legend" id="legend"></div>
+
+  <div class="tooltip" id="tooltip" hidden></div>
+</div>
+
+<script type="module">
+const DATA = /*__DATA__*/;
+
+const STREAM_CATEGORIES = DATA.stream_categories;
+const CAT_COLOR_VAR = Object.fromEntries(STREAM_CATEGORIES.map((c, i) => [c, `var(--hue${i + 1})`]));
+const BAND_ORDER = [...STREAM_CATEGORIES, "Other"];
+const bandColor = (b) => b === "Other" ? "var(--cell-other)" : CAT_COLOR_VAR[b];
+
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+function clearSvg(svg) { svg.replaceChildren(); }
+
+// ---- streamgraph (zero-baseline stacked area, one segment) ----
+const W = 460, H = 320;
+const M = { top: 10, right: 12, bottom: 28, left: 30 };
+const plotW = W - M.left - M.right;
+const plotH = H - M.top - M.bottom;
+
+function drawStream(svg, xs, bands, tooltipLabel) {
+  clearSvg(svg);
+  if (!xs || !xs.length) {
+    const fo = el("foreignObject", { x: 0, y: 0, width: W, height: H });
+    const div = document.createElement("div");
+    div.className = "no-data";
+    div.textContent = "Segment too short for windowed analysis.";
+    fo.appendChild(div);
+    svg.appendChild(fo);
+    return;
+  }
+
+  const totals = xs.map((_, i) => BAND_ORDER.reduce((s, b) => s + (bands[b]?.[i] || 0), 0));
+  const yMax = Math.max(0.5, Math.max(...totals)) * 1.08;
+  const xFor = (pos) => M.left + (pos / 100) * plotW;
+  const yFor = (v) => M.top + plotH * (1 - v / yMax);
+
+  // gridlines + y ticks
+  const ticks = 4;
+  for (let t = 0; t <= ticks; t++) {
+    const v = (yMax / ticks) * t;
+    const y = yFor(v);
+    svg.appendChild(el("line", { x1: M.left, x2: W - M.right, y1: y, y2: y, class: "grid-line" }));
+    const txt = el("text", { x: M.left - 6, y: y + 3, class: "axis-tick", "text-anchor": "end" });
+    txt.textContent = v.toFixed(1);
+    svg.appendChild(txt);
+  }
+  svg.appendChild(el("line", { x1: M.left, x2: M.left, y1: M.top, y2: H - M.bottom, class: "axis-line" }));
+  svg.appendChild(el("line", { x1: M.left, x2: W - M.right, y1: H - M.bottom, y2: H - M.bottom, class: "axis-line" }));
+  for (const pct of [0, 50, 100]) {
+    const t = el("text", { x: xFor(pct), y: H - M.bottom + 16, class: "axis-tick", "text-anchor": pct === 0 ? "start" : pct === 100 ? "end" : "middle" });
+    t.textContent = `${pct}%`;
+    svg.appendChild(t);
+  }
+
+  // cumulative stack, zero baseline
+  const cum = BAND_ORDER.map(() => xs.map(() => 0));
+  for (let bi = 0; bi < BAND_ORDER.length; bi++) {
+    const series = bands[BAND_ORDER[bi]] || xs.map(() => 0);
+    for (let i = 0; i < xs.length; i++) cum[bi][i] = (bi === 0 ? 0 : cum[bi - 1][i]) + series[i];
+  }
+  const group = el("g", {});
+  for (let bi = 0; bi < BAND_ORDER.length; bi++) {
+    const top = cum[bi], bottom = bi === 0 ? xs.map(() => 0) : cum[bi - 1];
+    let d = `M ${xFor(xs[0])} ${yFor(bottom[0])}`;
+    for (let i = 1; i < xs.length; i++) d += ` L ${xFor(xs[i])} ${yFor(bottom[i])}`;
+    for (let i = xs.length - 1; i >= 0; i--) d += ` L ${xFor(xs[i])} ${yFor(top[i])}`;
+    d += " Z";
+    group.appendChild(el("path", { d, class: "band", fill: bandColor(BAND_ORDER[bi]) }));
+  }
+  svg.appendChild(group);
+
+  // hover crosshair + tooltip
+  const crosshair = el("line", { x1: 0, x2: 0, y1: M.top, y2: H - M.bottom, class: "crosshair", visibility: "hidden" });
+  svg.appendChild(crosshair);
+  const hit = el("rect", { x: M.left, y: M.top, width: plotW, height: plotH, fill: "transparent" });
+  svg.appendChild(hit);
+
+  const tooltip = document.getElementById("tooltip");
+  function nearestIdx(clientX) {
+    const rect = svg.getBoundingClientRect();
+    const scale = W / rect.width;
+    const localX = (clientX - rect.left) * scale;
+    let best = 0, bestDist = Infinity;
+    for (let i = 0; i < xs.length; i++) {
+      const dist = Math.abs(xFor(xs[i]) - localX);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    }
+    return best;
+  }
+  function showAt(i, evt) {
+    crosshair.setAttribute("x1", xFor(xs[i]));
+    crosshair.setAttribute("x2", xFor(xs[i]));
+    crosshair.setAttribute("visibility", "visible");
+    tooltip.replaceChildren();
+    const head = document.createElement("div");
+    head.className = "t-head";
+    head.textContent = `${tooltipLabel} @ ${xs[i].toFixed(0)}%`;
+    tooltip.appendChild(head);
+    const rows = BAND_ORDER.map(b => ({ b, v: bands[b]?.[i] || 0 })).sort((a, c) => c.v - a.v);
+    for (const r of rows) {
+      const row = document.createElement("div");
+      row.className = "t-row";
+      const key = document.createElement("span");
+      key.className = "t-key";
+      key.style.background = bandColor(r.b);
+      const nameEl = document.createElement("span");
+      nameEl.className = "t-name";
+      nameEl.textContent = r.b;
+      const val = document.createElement("span");
+      val.className = "t-val";
+      val.textContent = r.v.toFixed(3);
+      row.append(key, nameEl, val);
+      tooltip.appendChild(row);
+    }
+    tooltip.hidden = false;
+    const x = Math.min(evt.clientX + 16, window.innerWidth - 316);
+    const y = Math.min(evt.clientY + 16, window.innerHeight - 200);
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+  }
+  function hide() { crosshair.setAttribute("visibility", "hidden"); tooltip.hidden = true; }
+  hit.addEventListener("pointermove", (e) => showAt(nearestIdx(e.clientX), e));
+  hit.addEventListener("pointerleave", hide);
+}
+
+// ---- differential line chart (category minus baseline mean, one segment) ----
+function drawDiffChart(svg, xs, diffBands, tooltipLabel) {
+  clearSvg(svg);
+  if (!xs || !xs.length) {
+    const fo = el("foreignObject", { x: 0, y: 0, width: W, height: H });
+    const div = document.createElement("div");
+    div.className = "no-data";
+    div.textContent = "Segment too short for windowed analysis.";
+    fo.appendChild(div);
+    svg.appendChild(fo);
+    return;
+  }
+
+  const allVals = STREAM_CATEGORIES.flatMap(c => diffBands[c] || []);
+  const maxAbs = Math.max(0.02, ...allVals.map(Math.abs)) * 1.15;
+  const xFor = (pos) => M.left + (pos / 100) * plotW;
+  const yFor = (v) => M.top + plotH * (1 - (v + maxAbs) / (2 * maxAbs));
+
+  const ticks = [-maxAbs, -maxAbs / 2, 0, maxAbs / 2, maxAbs];
+  for (const v of ticks) {
+    const y = yFor(v);
+    svg.appendChild(el("line", { x1: M.left, x2: W - M.right, y1: y, y2: y, class: v === 0 ? "axis-line" : "grid-line" }));
+    const txt = el("text", { x: M.left - 6, y: y + 3, class: "axis-tick", "text-anchor": "end" });
+    txt.textContent = v.toFixed(3);
+    svg.appendChild(txt);
+  }
+  svg.appendChild(el("line", { x1: M.left, x2: M.left, y1: M.top, y2: H - M.bottom, class: "axis-line" }));
+  for (const pct of [0, 50, 100]) {
+    const t = el("text", { x: xFor(pct), y: H - M.bottom + 16, class: "axis-tick", "text-anchor": pct === 0 ? "start" : pct === 100 ? "end" : "middle" });
+    t.textContent = `${pct}%`;
+    svg.appendChild(t);
+  }
+
+  const group = el("g", {});
+  for (const cat of STREAM_CATEGORIES) {
+    const series = diffBands[cat] || xs.map(() => 0);
+    let d = `M ${xFor(xs[0])} ${yFor(series[0])}`;
+    for (let i = 1; i < xs.length; i++) d += ` L ${xFor(xs[i])} ${yFor(series[i])}`;
+    group.appendChild(el("path", { d, fill: "none", stroke: CAT_COLOR_VAR[cat], "stroke-width": 1.8 }));
+  }
+  svg.appendChild(group);
+
+  const crosshair = el("line", { x1: 0, x2: 0, y1: M.top, y2: H - M.bottom, class: "crosshair", visibility: "hidden" });
+  svg.appendChild(crosshair);
+  const hit = el("rect", { x: M.left, y: M.top, width: plotW, height: plotH, fill: "transparent" });
+  svg.appendChild(hit);
+
+  const tooltip = document.getElementById("tooltip");
+  function nearestIdx(clientX) {
+    const rect = svg.getBoundingClientRect();
+    const scale = W / rect.width;
+    const localX = (clientX - rect.left) * scale;
+    let best = 0, bestDist = Infinity;
+    for (let i = 0; i < xs.length; i++) {
+      const dist = Math.abs(xFor(xs[i]) - localX);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    }
+    return best;
+  }
+  function showAt(i, evt) {
+    crosshair.setAttribute("x1", xFor(xs[i]));
+    crosshair.setAttribute("x2", xFor(xs[i]));
+    crosshair.setAttribute("visibility", "visible");
+    tooltip.replaceChildren();
+    const head = document.createElement("div");
+    head.className = "t-head";
+    head.textContent = `${tooltipLabel} @ ${xs[i].toFixed(0)}%`;
+    tooltip.appendChild(head);
+    const rows = STREAM_CATEGORIES.map(b => ({ b, v: diffBands[b]?.[i] || 0 })).sort((a, c) => c.v - a.v);
+    for (const r of rows) {
+      const row = document.createElement("div");
+      row.className = "t-row";
+      const key = document.createElement("span");
+      key.className = "t-key";
+      key.style.background = CAT_COLOR_VAR[r.b];
+      const nameEl = document.createElement("span");
+      nameEl.className = "t-name";
+      nameEl.textContent = r.b;
+      const val = document.createElement("span");
+      val.className = "t-val";
+      val.textContent = (r.v >= 0 ? "+" : "") + r.v.toFixed(3);
+      row.append(key, nameEl, val);
+      tooltip.appendChild(row);
+    }
+    tooltip.hidden = false;
+    const x = Math.min(evt.clientX + 16, window.innerWidth - 316);
+    const y = Math.min(evt.clientY + 16, window.innerHeight - 200);
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+  }
+  function hide() { crosshair.setAttribute("visibility", "hidden"); tooltip.hidden = true; }
+  hit.addEventListener("pointermove", (e) => showAt(nearestIdx(e.clientX), e));
+  hit.addEventListener("pointerleave", hide);
+}
+
+function renderLegend(metric) {
+  const legend = document.getElementById("legend");
+  legend.replaceChildren();
+  const add = (color, label) => {
+    const item = document.createElement("div");
+    item.className = "legend-item";
+    const sw = document.createElement("span");
+    sw.className = "legend-swatch";
+    sw.style.background = color;
+    const lbl = document.createElement("span");
+    lbl.textContent = label;
+    item.append(sw, lbl);
+    legend.appendChild(item);
+  };
+  for (const c of STREAM_CATEGORIES) add(CAT_COLOR_VAR[c], c);
+  if (metric !== "diff") {
+    add("var(--cell-other)", `Other (baseline: ${DATA.baseline_categories.join(", ")} — summed)`);
+  }
+}
+
+// ---- ranked delta chart (all questions, dot-and-line) ----
+function drawRanked(svg) {
+  clearSvg(svg);
+  const rows = DATA.deltas.filter(r => r.answer_delta != null || r.thought_delta != null);
+  rows.sort((a, b) => (a.answer_delta ?? 0) - (b.answer_delta ?? 0));
+
+  const rowH = 14, top = 20, left = 310, right = 30, bottom = 30;
+  const plotW2 = 900 - left - right;
+  const H2 = top + rows.length * rowH + bottom;
+  svg.setAttribute("viewBox", `0 0 900 ${H2}`);
+
+  const allVals = rows.flatMap(r => [r.answer_delta, r.thought_delta]).filter(v => v != null);
+  const maxAbs = Math.max(0.05, ...allVals.map(Math.abs)) * 1.15;
+  const xFor = (v) => left + plotW2 * ((v + maxAbs) / (2 * maxAbs));
+
+  for (const t of [-maxAbs, -maxAbs / 2, 0, maxAbs / 2, maxAbs]) {
+    const x = xFor(t);
+    svg.appendChild(el("line", { x1: x, x2: x, y1: top - 6, y2: H2 - bottom, class: t === 0 ? "axis-line" : "grid-line" }));
+    const txt = el("text", { x, y: H2 - bottom + 14, class: "axis-tick", "text-anchor": "middle" });
+    txt.textContent = t.toFixed(2);
+    svg.appendChild(txt);
+  }
+  const xlab = el("text", { x: left + plotW2 / 2, y: H2 - 4, class: "axis-label", "text-anchor": "middle" });
+  xlab.textContent = "Religion delta (similarity to Religion − avg. similarity to baseline categories)";
+  svg.appendChild(xlab);
+
+  const truncCat = (c) => c.length > 30 ? c.slice(0, 30) + "…" : c;
+
+  rows.forEach((r, i) => {
+    const y = top + i * rowH + rowH / 2;
+    const label = el("text", { x: left - 10, y: y + 3, class: "cat-label", "text-anchor": "end" });
+    label.textContent = `${truncCat(r.own_category)} (#${r.qid})`;
+    svg.appendChild(label);
+    if (r.thought_delta != null && r.answer_delta != null) {
+      svg.appendChild(el("line", { x1: xFor(r.thought_delta), x2: xFor(r.answer_delta), y1: y, y2: y, stroke: "var(--gridline)", "stroke-width": 1.5 }));
+    }
+    // Shape-coded, not color-coded: these two dots are a segment (thought vs.
+    // answer), a different kind of thing from the categorical hues used
+    // everywhere else on this page, so they deliberately don't borrow a --hueN.
+    if (r.thought_delta != null) {
+      svg.appendChild(el("circle", { cx: xFor(r.thought_delta), cy: y, r: 3.5, fill: "var(--surface-1)", stroke: "var(--text-primary)", "stroke-width": 1.5 }));
+    }
+    if (r.answer_delta != null) {
+      svg.appendChild(el("circle", { cx: xFor(r.answer_delta), cy: y, r: 3.5, fill: "var(--text-primary)" }));
+    }
+  });
+
+  const legendItems = [["ring", "Thought"], ["fill", "Answer"]];
+  legendItems.forEach(([kind, label], i) => {
+    const x = left + i * 100;
+    if (kind === "ring") svg.appendChild(el("circle", { cx: x, cy: 6, r: 3.5, fill: "var(--surface-1)", stroke: "var(--text-primary)", "stroke-width": 1.5 }));
+    else svg.appendChild(el("circle", { cx: x, cy: 6, r: 3.5, fill: "var(--text-primary)" }));
+    const t = el("text", { x: x + 8, y: 9, class: "axis-tick" });
+    t.textContent = label;
+    svg.appendChild(t);
+  });
+}
+
+// ---- view wiring ----
+const viewSelect = document.getElementById("viewSelect");
+const metricSelect = document.getElementById("metricSelect");
+const metricLabel = document.getElementById("metricLabel");
+const metricNote = document.getElementById("metricNote");
+const qMeta = document.getElementById("qMeta");
+const thoughtCard = document.getElementById("thoughtCard");
+const answerCard = document.getElementById("answerCard");
+const rankedCard = document.getElementById("rankedCard");
+const legendEl = document.getElementById("legend");
+
+function addOption(select, value, text) {
+  const opt = document.createElement("option");
+  opt.value = value;
+  opt.textContent = text;
+  select.appendChild(opt);
+}
+addOption(viewSelect, "aggregate", `Aggregate — average across all ${DATA.n_questions} questions`);
+addOption(viewSelect, "ranked", "Ranked religion delta — all questions");
+
+const byCategory = {};
+for (const q of DATA.questions) (byCategory[q.category] ??= []).push(q);
+for (const cat of Object.keys(byCategory).sort()) {
+  const group = document.createElement("optgroup");
+  group.label = `${cat} (${byCategory[cat].length})`;
+  for (const q of byCategory[cat].sort((a, b) => a.qid.localeCompare(b.qid, undefined, { numeric: true }))) {
+    const short = q.text.length > 70 ? q.text.slice(0, 70) + "…" : q.text;
+    addOption(group, q.qid, `#${q.qid} — ${short}`);
+  }
+  viewSelect.appendChild(group);
+}
+
+function truncate(s, n) { return s.length > n ? s.slice(0, n) + "…" : s; }
+
+const RAW_CAPTION = "Y: summed category similarity (1 &minus; JS divergence)";
+const DIFF_CAPTION = "Y: category similarity &minus; mean baseline-category similarity";
+
+function setView(value) {
+  const metric = metricSelect.value;
+  if (value === "ranked") {
+    thoughtCard.style.display = "none";
+    answerCard.style.display = "none";
+    rankedCard.style.display = "";
+    legendEl.style.display = "none";
+    metricLabel.style.display = "none";
+    metricSelect.style.display = "none";
+    metricNote.style.display = "none";
+    qMeta.textContent = "";
+    drawRanked(document.getElementById("rankedChart"));
+    return;
+  }
+  thoughtCard.style.display = "";
+  answerCard.style.display = "";
+  rankedCard.style.display = "none";
+  legendEl.style.display = "";
+  metricLabel.style.display = "";
+  metricSelect.style.display = "";
+  metricNote.style.display = metric === "diff" ? "" : "none";
+  renderLegend(metric);
+
+  let thought, answer, thoughtN = "", answerN = "";
+  if (value === "aggregate") {
+    qMeta.innerHTML = `<span class="cat-tag">Aggregate</span>average of the windowed stream across all ${DATA.n_questions} questions (interpolated onto a common 0&ndash;100% grid, then averaged).`;
+    thought = DATA.aggregate.thought;
+    answer = DATA.aggregate.answer;
+  } else {
+    const q = DATA.questions.find(q => q.qid === value);
+    qMeta.replaceChildren();
+    const tag = document.createElement("span");
+    tag.className = "cat-tag";
+    tag.textContent = q.category;
+    qMeta.append(tag, document.createTextNode(truncate(q.text, 240)));
+    thought = q.segments.thought;
+    answer = q.segments.answer;
+    if (thought) thoughtN = `(${thought.xs.length} windows)`;
+    if (answer) answerN = `(${answer.xs.length} windows)`;
+  }
+  document.getElementById("thoughtN").textContent = thoughtN;
+  document.getElementById("answerN").textContent = answerN;
+  document.getElementById("thoughtCaption").innerHTML = metric === "diff" ? DIFF_CAPTION : RAW_CAPTION;
+  document.getElementById("answerCaption").innerHTML = metric === "diff" ? DIFF_CAPTION : RAW_CAPTION;
+
+  const thoughtChart = document.getElementById("thoughtChart");
+  const answerChart = document.getElementById("answerChart");
+  if (metric === "diff") {
+    drawDiffChart(thoughtChart, thought?.xs, thought?.diff_bands || {}, "Thought");
+    drawDiffChart(answerChart, answer?.xs, answer?.diff_bands || {}, "Answer");
+  } else {
+    drawStream(thoughtChart, thought?.xs, thought?.bands || {}, "Thought");
+    drawStream(answerChart, answer?.xs, answer?.bands || {}, "Answer");
+  }
+}
+
+viewSelect.addEventListener("change", () => setView(viewSelect.value));
+metricSelect.addEventListener("change", () => setView(viewSelect.value));
+viewSelect.value = "aggregate";
+metricSelect.value = "raw";
+setView("aggregate");
+</script>

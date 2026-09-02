@@ -1,0 +1,54 @@
+Question A (3 thought positions)
+Raw top-3 output per position (this is what the lens actually gives you):
+
+position	top-3
+1	God .50, sin .30, law .10
+2	law .40, court .30, God .20
+3	court .60, law .20, code .10
+Step 1 — align by token id. Every position needs a value for every token that appears anywhere, so missing tokens get filled with 0, and a residual bucket absorbs 1 − sum(top-3) (this stands in for the ~150k vocab tokens that didn't make top-3/top-20):
+
+position	God	sin	law	court	code	residual
+1	.50	.30	.10	0	0	.10
+2	.20	0	.40	.30	0	.10
+3	0	0	.20	.60	.10	.10
+Step 2 — average across the 3 positions (elementwise):
+
+God: (.50+.20+0)/3 = .233
+sin: (.30+0+0)/3 = .100
+law: (.10+.40+.20)/3 = .233
+court: (0+.30+.60)/3 = .300
+code: (0+0+.10)/3 = .033
+residual: (.10+.10+.10)/3 = .100
+
+→ Question A's pooled distribution: [God .233, sin .100, law .233, court .300, code .033, resid .100] (sums to 1).
+
+Question B (only 2 thought positions, to show length doesn't matter)
+position	top-3
+1	law .50, court .20, God .20
+2	code .40, law .30, court .20
+Aligned + residual:
+
+position	God	sin	law	court	code	residual
+1	.20	0	.50	.20	0	.10
+2	0	0	.30	.20	.40	.10
+Average across its 2 positions → Question B's pooled distribution: [God .100, sin 0, law .400, court .200, code .200, resid .100].
+
+Step 3 — average across questions to get the category ground truth
+Question A had 3 positions, Question B had 2 — but that no longer matters, because each question already collapsed to one vector. Now it's just a plain average of two vectors:
+
+God	sin	law	court	code	residual
+Q A	.233	.100	.233	.300	.033	.100
+Q B	.100	0	.400	.200	.200	.100
+GT	.167	.050	.317	.250	.117	.100
+That last row is the category's ground truth distribution. Add a 3rd question and it's (A + B + C) / 3, elementwise, same way.
+
+Why the two-stage average matters: if you'd instead thrown all 5 positions (3 from A + 2 from B) into one big average, Question A would get 60% of the weight just for being longer, even though it's only 1 of 2 questions. Averaging within-question first, then across questions, makes each question count equally regardless of how many tokens it generated.
+
+Scale this up: real vocab instead of 5 tokens, top-20 instead of top-3, and dozens of questions instead of 2 — same two-step mechanics, just bigger vectors.
+
+
+Category - baseline mean #nowitmakessense
+most of the ground truth distributions overlap. So when computing the differences between the distributions, I saw most of the categories behaving the same way, increasing and decreasing the same way. 
+That's because most distributions overlap in same token words. To avoid that a baseline mean was created, and that is subtracted from the main category distribution. 
+The baseline mean was created by finding the mean similarity baseline of Law/Politics/Government/History, Technology & Definitions, Science/Physics/Math
+Chosen because they're presumed to have no plausible category-specific content in these moral-reasoning answers. Subtracting that mean removes the shared/generic component, leaving what's specific to the category in question. 

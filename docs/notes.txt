@@ -1,0 +1,46 @@
+1. Run sample of questions from each category to get ground truth distribution
+    - By run I mean run a sample of questions from a category through the jlens pipeline and create a distrbution from the average of the tokens in the j-space
+2. Use a test sample to see the differences between the test sample distribution and the ground truth distrbution (KL Divergent)
+    - Create a distribution difference from this?
+3. b = Ax (something to do with this I forgot)
+4. Something to do with Latent Dirichlet Allocation I forgot
+    - Where should LDA be used? (It's a way to get the main topic from a document that has multiple topics)
+
+Something else to do (very similar):
+1. Get distribution of j-space tokens for each category
+2. KL Divergent analysis on each category to see which tokens overlap and which are unique
+
+Claude's advice on the distribution:
+Given the pooling method we settled on (average positions within a question first, then average across questions), each of your 70 units isn't a single noisy token draw — it's already a smoothed summary over ~hundreds of thought tokens. So the effective noise per unit is lower than raw N=70 would suggest for, say, 70 independent single-token samples. That's the good news.
+Why it might not be enough anyway — depends on what you're separating. Distinct categories (sports vs. religion) probably diverge enough that even 70 (or the ~49 you'd use after a split) shows a clean signal — the effect size is large relative to sampling noise. The comparison you actually care about (does "ethics" sit unusually close to "religious") is a subtler effect, and subtle effects need more data to distinguish reliably from noise. 70 might show you a difference, but the confidence interval around it could be wide enough that you can't be sure it's real rather than an artifact of which particular 49 questions ended up in the ground truth.
+Concrete way to answer this yourself instead of trusting a rule of thumb: run a convergence/stability check. Build the ground truth incrementally — from 10 questions, 20, 30, ... up to whatever you hold out for training — and measure how much the distribution itself changes each time you add a batch (e.g. divergence between ground-truth-at-N and ground-truth-at-N-10, or bootstrap resampling variance at your final N). If the distribution is still moving substantially as you add the last 10-20 questions, that's your direct evidence you haven't saturated yet for that category. If it's basically flat by ~50, 70 is plenty for that category specifically. This also naturally answers the question per-category rather than assuming one number applies to all of them — your 19-question categories will very likely still be climbing on this curve, while a 70-question category might already be flat.
+Bottom line: I'd treat 70 as fine to build a first-pass pipeline and validate it end-to-end, but I wouldn't treat a subtle cross-category finding (like the ethics/religion overlap) as solid until either the stability check shows convergence or you've bumped up the question count for that specific comparison.
+
+
+The bootstraping resampling thing is just to settle the question "how big should the sample size be to create a good ground truth?" 
+By 'good' I mean one that is representative enough of the category. If through the sampling the distributions are too varied, then that means there isn't enough questions and I should probably create more.
+
+
+Category	Total	Train N	Held-out
+Marriage & Romantic Partnerships	54	35	19
+Human Nature & Philosophy	50	30	20
+Science, Physics & Math	40	25	15
+Depression, Addiction & Feeling Lost	35	20	15
+Family Duty & Obligations	30	20	10
+Grief, Loss & Death	17	10	7
+
+# 1. Extend the pool with train/heldout splits for the 6 new categories
+#    (merges into the existing pool, Law/Tech/Religion/Ethics untouched)
+cd data && python3 build_ground_truth_pool.py
+
+# 2. Regenerate prompts.py with all train_ids (old + new) — get_jlens.py
+#    skips ids that already have output, so this is safe to re-run
+python3 build_prompts_file.py
+
+# 3. The expensive step: run the 32B model on the ~140 new prompts
+#    (~3.5-4h based on the earlier pace). Run from project root.
+cd .. && .venv_jl3/bin/python3 get_jlens.py >> run_get_jlens.log 2>&1
+
+# 4. Build the ground truths — now one JSON per category under
+#    data/ground_truths/, e.g. data/ground_truths/grief_loss_death.json
+cd data && python3 build_ground_truths.py
