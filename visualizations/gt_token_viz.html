@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>J-Lens Ground Truth Token Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0b0d12;
+  --surface:#111420;
+  --surface-2:#181c2a;
+  --surface-3:#20263a;
+  --border:rgba(255,255,255,0.07);
+  --border-2:rgba(255,255,255,0.13);
+  --text:#dde2f0;
+  --text-2:#8890a8;
+  --text-3:#4e5570;
+  --radius:8px;
+  --trans:180ms ease;
+}
+
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px}
+
+/* ---- Layout ---- */
+.app{display:flex;flex-direction:column;height:100vh}
+
+.top-bar{
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;height:52px;flex-shrink:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+}
+.logo{font-weight:700;font-size:14px;letter-spacing:-.3px}
+.logo span{opacity:.45;font-weight:400;margin:0 6px}
+.subtitle{color:var(--text-3);font-size:11.5px}
+.top-spacer{flex:1}
+
+.layout{display:flex;flex:1;overflow:hidden}
+
+/* ---- Sidebar ---- */
+.sidebar{
+  width:252px;flex-shrink:0;
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sidebar-inner{flex:1;overflow-y:auto;padding:14px 0 4px}
+.sidebar-label{
+  padding:0 16px 8px;
+  font-size:10px;font-weight:600;letter-spacing:.8px;
+  text-transform:uppercase;color:var(--text-3);
+}
+.cat-list{list-style:none}
+.cat-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:8px 16px;cursor:pointer;
+  transition:background var(--trans);
+  border-left:2px solid transparent;
+}
+.cat-item:hover{background:rgba(255,255,255,0.04)}
+.cat-item.active{
+  background:rgba(255,255,255,0.07);
+  border-left-color:var(--cat-color,#888);
+}
+.cat-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px;
+}
+.cat-name{font-size:12px;line-height:1.4;color:var(--text-2)}
+.cat-item.active .cat-name{color:var(--text)}
+
+.sidebar-footer{
+  padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;
+}
+.compare-btn{
+  width:100%;padding:8px 12px;
+  border:1px solid var(--border-2);border-radius:6px;
+  background:transparent;color:var(--text-2);
+  font-size:12px;font-family:'Inter',sans-serif;
+  cursor:pointer;transition:all var(--trans);text-align:left;
+  display:flex;align-items:center;gap:8px;
+}
+.compare-btn:hover{border-color:rgba(255,255,255,0.22);color:var(--text)}
+.compare-btn.active{
+  background:rgba(255,255,255,0.07);
+  border-color:rgba(255,255,255,0.2);color:var(--text);
+}
+
+/* ---- Main content ---- */
+.content{flex:1;display:flex;overflow:hidden}
+
+/* ---- Panel ---- */
+.panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+.panel-header{
+  padding:18px 28px 14px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.panel-title{font-size:17px;font-weight:600;margin-bottom:8px;letter-spacing:-.2px}
+.panel-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.meta-badge{
+  padding:2px 9px;border-radius:999px;
+  border:1px solid var(--border-2);
+  font-size:10.5px;color:var(--text-2);
+  white-space:nowrap;
+}
+.meta-badge.coverage{color:var(--text)}
+
+/* ---- Controls ---- */
+.controls{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:10px 28px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.view-tabs{
+  display:flex;border:1px solid var(--border-2);
+  border-radius:6px;overflow:hidden;
+}
+.view-tab{
+  padding:5px 14px;background:transparent;border:none;
+  color:var(--text-2);font-size:12px;font-family:'Inter',sans-serif;
+  cursor:pointer;transition:all var(--trans);white-space:nowrap;
+}
+.view-tab:hover:not(.active){background:rgba(255,255,255,0.05)}
+.view-tab.active{background:rgba(255,255,255,0.1);color:var(--text)}
+
+.ctrl-group{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-2)}
+.ctrl-select{
+  background:var(--surface-2);border:1px solid var(--border-2);
+  color:var(--text);font-size:12px;font-family:'Inter',sans-serif;
+  padding:4px 8px;border-radius:5px;
+}
+.search-input{
+  background:var(--surface-2);border:1px solid var(--border-2);
+  color:var(--text);font-size:12px;font-family:'Inter',sans-serif;
+  padding:4px 10px;border-radius:5px;width:160px;outline:none;
+  transition:border-color var(--trans);
+}
+.search-input:focus{border-color:rgba(255,255,255,0.3)}
+.search-input::placeholder{color:var(--text-3)}
+
+/* ---- Viz area ---- */
+.viz-area{flex:1;overflow-y:auto}
+
+/* ---- Cloud ---- */
+.cloud{
+  display:flex;flex-wrap:wrap;align-items:center;
+  gap:8px;padding:28px 32px;
+}
+.cloud-token{
+  display:inline-block;border-radius:999px;
+  padding:.2em .75em;line-height:1.4;
+  cursor:default;border:1px solid transparent;
+  transition:transform var(--trans),opacity var(--trans),box-shadow var(--trans);
+  font-family:'Inter',sans-serif;
+  user-select:none;
+}
+.cloud-token:hover{transform:scale(1.08);box-shadow:0 3px 14px rgba(0,0,0,.4)}
+.cloud-token.dimmed{opacity:.18!important}
+.cloud-token.shared{outline:2px solid rgba(255,255,255,.35);outline-offset:1px}
+
+/* ---- Bars ---- */
+.bars{padding:14px 28px;display:flex;flex-direction:column;gap:4px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-rank{width:26px;text-align:right;font-size:10px;color:var(--text-3);flex-shrink:0}
+.bar-token{
+  width:175px;flex-shrink:0;font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;color:var(--text);white-space:pre;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.bar-token.dimmed{opacity:.2}
+.bar-track{
+  flex:1;height:16px;background:rgba(255,255,255,0.05);
+  border-radius:3px;overflow:hidden;position:relative;min-width:60px;
+}
+.bar-fill{height:100%;border-radius:3px;transition:width 350ms ease}
+.bar-prob{
+  width:110px;text-align:right;font-size:10.5px;
+  color:var(--text-2);font-family:'JetBrains Mono',monospace;flex-shrink:0;
+}
+
+/* ---- Table ---- */
+.table-wrap{padding:14px 28px}
+.gt-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.gt-table th{
+  padding:7px 12px;text-align:left;font-weight:500;
+  color:var(--text-3);border-bottom:1px solid var(--border-2);
+  font-size:10px;text-transform:uppercase;letter-spacing:.6px;
+}
+.gt-table td{padding:5px 12px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.gt-table tr:hover td{background:rgba(255,255,255,0.03)}
+.gt-table tr.dimmed td{opacity:.2}
+.token-pill{
+  display:inline-block;padding:1px 9px;border-radius:999px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+}
+.mini-bar-wrap{width:120px}
+.mini-bar{height:5px;border-radius:3px}
+
+/* ---- Compare ---- */
+.compare-layout{display:flex;flex:1;overflow:hidden}
+.compare-panel{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+  border-right:1px solid var(--border);
+}
+.compare-panel:last-child{border-right:none}
+.compare-selector{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.compare-select{
+  flex:1;background:var(--surface-2);border:1px solid var(--border-2);
+  color:var(--text);font-size:12px;font-family:'Inter',sans-serif;
+  padding:5px 9px;border-radius:5px;
+}
+.shared-legend{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 18px;font-size:11px;color:var(--text-3);
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.shared-swatch{
+  width:14px;height:14px;border-radius:50%;
+  outline:2px solid rgba(255,255,255,.35);outline-offset:1px;
+  background:rgba(255,255,255,.1);flex-shrink:0;
+}
+
+/* ---- Tooltip ---- */
+#tooltip{
+  position:fixed;background:#1a1e2e;border:1px solid var(--border-2);
+  border-radius:6px;padding:6px 11px;font-size:11px;
+  pointer-events:none;z-index:9999;display:none;
+  line-height:1.6;color:var(--text);
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top-bar">
+    <div class="logo">J-Lens<span>/</span>Ground Truth Token Explorer</div>
+    <div class="subtitle">Category vocabulary · Layer 62 · Thought segment · stopwords excluded</div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-inner">
+        <div class="sidebar-label">Categories</div>
+        <ul class="cat-list" id="cat-list"></ul>
+      </div>
+      <div class="sidebar-footer">
+        <button class="compare-btn" id="compare-btn">
+          <span>⇌</span> Compare two categories
+        </button>
+      </div>
+    </aside>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+<div id="tooltip"></div>
+
+<script>
+const DATA = [{"name": "Applied Ethics & Moral Dilemmas", "color": "#eda100", "layer": 62, "segment": "thought", "n_questions": 20, "total_tokens_in_dist": 8048, "top_n_mass": 0.3359, "tokens": [{"token": "thought", "probability": 0.01758138683110106, "token_id": 60565, "rank": 1}, {"token": "'s", "probability": 0.01396115211893192, "token_id": 594, "rank": 2}, {"token": " whether", "probability": 0.009446083086313162, "token_id": 3425, "rank": 3}, {"token": " moral", "probability": 0.00759991052745717, "token_id": 15659, "rank": 4}, {"token": " important", "probability": 0.006653763303416332, "token_id": 2989, "rank": 5}, {"token": " considering", "probability": 0.006388890690965416, "token_id": 12831, "rank": 6}, {"token": " might", "probability": 0.00633983479017774, "token_id": 2578, "rank": 7}, {"token": " personal", "probability": 0.0060492501328397955, "token_id": 4345, "rank": 8}, {"token": " ethical", "probability": 0.005755154601531958, "token_id": 30208, "rank": 9}, {"token": " vary", "probability": 0.0057291296788193405, "token_id": 13289, "rank": 10}, {"token": " including", "probability": 0.005510279478843956, "token_id": 2670, "rank": 11}, {"token": " war", "probability": 0.0053909387430236015, "token_id": 4116, "rank": 12}, {"token": " legal", "probability": 0.005365927306481661, "token_id": 5777, "rank": 13}, {"token": " perspectives", "probability": 0.005123515521689517, "token_id": 38455, "rank": 14}, {"token": " human", "probability": 0.005002388278327276, "token_id": 3738, "rank": 15}, {"token": " based", "probability": 0.004980952147313708, "token_id": 3118, "rank": 16}, {"token": " consider", "probability": 0.004556493703684675, "token_id": 2908, "rank": 17}, {"token": " morality", "probability": 0.004549578496814217, "token_id": 44551, "rank": 18}, {"token": " regarding", "probability": 0.004523456955205602, "token_id": 8826, "rank": 19}, {"token": " morally", "probability": 0.0044816341685076705, "token_id": 56223, "rank": 20}, {"token": " beliefs", "probability": 0.004386427307628148, "token_id": 20799, "rank": 21}, {"token": " several", "probability": 0.004365845889073833, "token_id": 3807, "rank": 22}, {"token": " rights", "probability": 0.00418519450611546, "token_id": 3188, "rank": 23}, {"token": " world", "probability": 0.004114696119016407, "token_id": 1879, "rank": 24}, {"token": " argue", "probability": 0.0040592912173304085, "token_id": 17585, "rank": 25}, {"token": " life", "probability": 0.004056822408293711, "token_id": 2272, "rank": 26}, {"token": " speaking", "probability": 0.003908593288667326, "token_id": 12094, "rank": 27}, {"token": " different", "probability": 0.0038981085088893573, "token_id": 2155, "rank": 28}, {"token": " others", "probability": 0.0038442583278117054, "token_id": 3800, "rank": 29}, {"token": " may", "probability": 0.0037108420074947654, "token_id": 1231, "rank": 30}, {"token": " widely", "probability": 0.0036820033152801675, "token_id": 13570, "rank": 31}, {"token": " due", "probability": 0.003556432676923004, "token_id": 4152, "rank": 32}, {"token": " across", "probability": 0.0034238204616027904, "token_id": 3941, "rank": 33}, {"token": " gambling", "probability": 0.003253298370247005, "token_id": 24696, "rank": 34}, {"token": " involves", "probability": 0.0031685836263513705, "token_id": 17601, "rank": 35}, {"token": "ically", "probability": 0.0030516649102355874, "token_id": 2673, "rank": 36}, {"token": " provide", "probability": 0.002966225456241224, "token_id": 3410, "rank": 37}, {"token": " individuals", "probability": 0.002952823576043687, "token_id": 7775, "rank": 38}, {"token": " depending", "probability": 0.0028575674349813045, "token_id": 11649, "rank": 39}, {"token": " first", "probability": 0.002853365005487833, "token_id": 1156, "rank": 40}, {"token": " dignity", "probability": 0.002847995741746134, "token_id": 37829, "rank": 41}, {"token": " without", "probability": 0.002834186082157856, "token_id": 2041, "rank": 42}, {"token": " around", "probability": 0.002802144531751457, "token_id": 2163, "rank": 43}, {"token": " varies", "probability": 0.002740358713621109, "token_id": 34227, "rank": 44}, {"token": " euth", "probability": 0.00258422084519662, "token_id": 80580, "rank": 45}, {"token": " considered", "probability": 0.00257673096895304, "token_id": 6509, "rank": 46}, {"token": " child", "probability": 0.002561537760337737, "token_id": 1682, "rank": 47}, {"token": " religious", "probability": 0.0025526065257694486, "token_id": 10381, "rank": 48}, {"token": " wrong", "probability": 0.0025267462910294235, "token_id": 4969, "rank": 49}, {"token": " circumcision", "probability": 0.002481284161860317, "token_id": 73509, "rank": 50}, {"token": " cloning", "probability": 0.0024778553800450954, "token_id": 77866, "rank": 51}, {"token": " potential", "probability": 0.0024731951211952145, "token_id": 4650, "rank": 52}, {"token": " upon", "probability": 0.002461427167065166, "token_id": 5193, "rank": 53}, {"token": "ought", "probability": 0.0024331508452459637, "token_id": 2450, "rank": 54}, {"token": ">The", "probability": 0.0023714131588510284, "token_id": 16357, "rank": 55}, {"token": " within", "probability": 0.0023681260810529264, "token_id": 2878, "rank": 56}, {"token": " arguments", "probability": 0.002357261680374002, "token_id": 5977, "rank": 57}, {"token": "ally", "probability": 0.0023310623680633013, "token_id": 745, "rank": 58}, {"token": " various", "probability": 0.002324404319777841, "token_id": 5257, "rank": 59}, {"token": " philosophical", "probability": 0.0023103903443974995, "token_id": 40803, "rank": 60}, {"token": " justified", "probability": 0.00230811277822198, "token_id": 34416, "rank": 61}, {"token": " people", "probability": 0.002276831290475811, "token_id": 1251, "rank": 62}, {"token": " person", "probability": 0.0022530354940564993, "token_id": 1697, "rank": 63}, {"token": " certain", "probability": 0.0022526650869960302, "token_id": 3654, "rank": 64}, {"token": " factors", "probability": 0.0022402893209235385, "token_id": 9363, "rank": 65}, {"token": " regardless", "probability": 0.002230377148874911, "token_id": 15484, "rank": 66}, {"token": " impact", "probability": 0.002172836954525447, "token_id": 5421, "rank": 67}, {"token": " often", "probability": 0.0021679396275913927, "token_id": 3545, "rank": 68}, {"token": " someone", "probability": 0.002148985714595889, "token_id": 4325, "rank": 69}, {"token": " need", "probability": 0.0020773707845427405, "token_id": 1184, "rank": 70}, {"token": " children", "probability": 0.0020725509917626068, "token_id": 2841, "rank": 71}, {"token": " considerations", "probability": 0.002070565546040271, "token_id": 37764, "rank": 72}, {"token": "孝", "probability": 0.002019039512866325, "token_id": 104826, "rank": 73}, {"token": "Reflect", "probability": 0.0020001133465222232, "token_id": 72789, "rank": 74}, {"token": " view", "probability": 0.0019957192418082526, "token_id": 1651, "rank": 75}, {"token": " acceptable", "probability": 0.001952891239015341, "token_id": 21555, "rank": 76}, {"token": " crucial", "probability": 0.0019345631792953102, "token_id": 16587, "rank": 77}, {"token": " another", "probability": 0.0019331703952640666, "token_id": 2441, "rank": 78}, {"token": " Eth", "probability": 0.0019321799820226054, "token_id": 14356, "rank": 79}, {"token": " cultures", "probability": 0.0019223495666396782, "token_id": 26735, "rank": 80}, {"token": " death", "probability": 0.0019121766800297394, "token_id": 4545, "rank": 81}, {"token": " decision", "probability": 0.0019089220017240564, "token_id": 5480, "rank": 82}, {"token": " Universal", "probability": 0.0018987476108550025, "token_id": 25500, "rank": 83}, {"token": " organ", "probability": 0.001889509794607068, "token_id": 2872, "rank": 84}, {"token": " psychological", "probability": 0.0018844502053526242, "token_id": 23187, "rank": 85}, {"token": " every", "probability": 0.0018615630121199488, "token_id": 1449, "rank": 86}, {"token": " fil", "probability": 0.0018443714812459596, "token_id": 1461, "rank": 87}, {"token": " believe", "probability": 0.0018402310435968361, "token_id": 4411, "rank": 88}, {"token": " suffering", "probability": 0.0018394362514885336, "token_id": 15691, "rank": 89}, {"token": " involved", "probability": 0.0018326067026325436, "token_id": 6398, "rank": 90}, {"token": " right", "probability": 0.0018142452968364458, "token_id": 1290, "rank": 91}, {"token": " universal", "probability": 0.0017952126809379816, "token_id": 20178, "rank": 92}, {"token": "anas", "probability": 0.0017726203249852322, "token_id": 25908, "rank": 93}, {"token": "ia", "probability": 0.0017658380795242874, "token_id": 685, "rank": 94}, {"token": " worth", "probability": 0.0017538862156897717, "token_id": 5802, "rank": 95}, {"token": " influenced", "probability": 0.0017515670433411526, "token_id": 27061, "rank": 96}, {"token": " ethics", "probability": 0.0017469904006014113, "token_id": 30908, "rank": 97}, {"token": " financial", "probability": 0.0017366799554814135, "token_id": 5896, "rank": 98}, {"token": " ever", "probability": 0.0017140255394225967, "token_id": 3512, "rank": 99}, {"token": " society", "probability": 0.0016952483873736283, "token_id": 8232, "rank": 100}]}, {"name": "Depression, Addiction & Feeling Lost", "color": "#e34948", "layer": 62, "segment": "thought", "n_questions": 20, "total_tokens_in_dist": 7870, "top_n_mass": 0.32, "tokens": [{"token": "thought", "probability": 0.013760759683942891, "token_id": 60565, "rank": 1}, {"token": " might", "probability": 0.012246297635932341, "token_id": 2578, "rank": 2}, {"token": " help", "probability": 0.011437811163779621, "token_id": 1492, "rank": 3}, {"token": "'s", "probability": 0.010990983418570775, "token_id": 594, "rank": 4}, {"token": " provide", "probability": 0.008909481542692938, "token_id": 3410, "rank": 5}, {"token": " support", "probability": 0.008777460945720397, "token_id": 1824, "rank": 6}, {"token": "ought", "probability": 0.006838327966957764, "token_id": 2450, "rank": 7}, {"token": " first", "probability": 0.0068180836873166315, "token_id": 1156, "rank": 8}, {"token": " feeling", "probability": 0.0064093647453795696, "token_id": 8266, "rank": 9}, {"token": "'re", "probability": 0.005736535718638248, "token_id": 2299, "rank": 10}, {"token": " towards", "probability": 0.005499009930338706, "token_id": 6974, "rank": 11}, {"token": " important", "probability": 0.00532584118730906, "token_id": 2989, "rank": 12}, {"token": " feelings", "probability": 0.005305305344517142, "token_id": 15650, "rank": 13}, {"token": " situation", "probability": 0.004985194466434877, "token_id": 6534, "rank": 14}, {"token": " steps", "probability": 0.004609705733632793, "token_id": 7354, "rank": 15}, {"token": " self", "probability": 0.004549359723008921, "token_id": 656, "rank": 16}, {"token": " activities", "probability": 0.004233549143892266, "token_id": 7488, "rank": 17}, {"token": " sounds", "probability": 0.0042188200949524555, "token_id": 10362, "rank": 18}, {"token": " despite", "probability": 0.004070930692758093, "token_id": 8818, "rank": 19}, {"token": " personal", "probability": 0.003994834296736278, "token_id": 4345, "rank": 20}, {"token": " someone", "probability": 0.003593810026399024, "token_id": 4325, "rank": 21}, {"token": " due", "probability": 0.0034456977083997037, "token_id": 4152, "rank": 22}, {"token": " step", "probability": 0.0032595339824181293, "token_id": 3019, "rank": 23}, {"token": " effectively", "probability": 0.003255783670179639, "token_id": 13444, "rank": 24}, {"token": " goals", "probability": 0.0032254437667744015, "token_id": 8845, "rank": 25}, {"token": " address", "probability": 0.0031865292316431, "token_id": 2621, "rank": 26}, {"token": " various", "probability": 0.0031768844214843718, "token_id": 5257, "rank": 27}, {"token": " behavior", "probability": 0.0031460237798554918, "token_id": 7709, "rank": 28}, {"token": " sense", "probability": 0.0030885480900227852, "token_id": 5530, "rank": 29}, {"token": " tailored", "probability": 0.003055468590416073, "token_id": 40791, "rank": 30}, {"token": " setting", "probability": 0.003054182878061862, "token_id": 6243, "rank": 31}, {"token": " time", "probability": 0.0030219141853184374, "token_id": 882, "rank": 32}, {"token": " without", "probability": 0.002976117969863583, "token_id": 2041, "rank": 33}, {"token": " require", "probability": 0.002894524407308298, "token_id": 1373, "rank": 34}, {"token": " experiences", "probability": 0.002870782056820521, "token_id": 11449, "rank": 35}, {"token": " friends", "probability": 0.0028113052087142686, "token_id": 4780, "rank": 36}, {"token": "ing", "probability": 0.0028056319662087877, "token_id": 287, "rank": 37}, {"token": " positive", "probability": 0.002764287628119053, "token_id": 6785, "rank": 38}, {"token": " stalking", "probability": 0.0027056617007300975, "token_id": 81795, "rank": 39}, {"token": " feel", "probability": 0.002633317770272802, "token_id": 2666, "rank": 40}, {"token": " find", "probability": 0.0026328639017636573, "token_id": 1477, "rank": 41}, {"token": " social", "probability": 0.002618209982398427, "token_id": 3590, "rank": 42}, {"token": " family", "probability": 0.0025935875667013335, "token_id": 2997, "rank": 43}, {"token": " change", "probability": 0.0025411212498411837, "token_id": 2297, "rank": 44}, {"token": " life", "probability": 0.0024885040499690652, "token_id": 2272, "rank": 45}, {"token": " may", "probability": 0.00248085029625786, "token_id": 1231, "rank": 46}, {"token": " need", "probability": 0.0024682433098185256, "token_id": 1184, "rank": 47}, {"token": " whether", "probability": 0.0024135404035051434, "token_id": 3425, "rank": 48}, {"token": " professional", "probability": 0.0023611411891071117, "token_id": 6584, "rank": 49}, {"token": " way", "probability": 0.0023242717375211316, "token_id": 1616, "rank": 50}, {"token": " including", "probability": 0.0023164606219145344, "token_id": 2670, "rank": 51}, {"token": " guidance", "probability": 0.002307174095366374, "token_id": 18821, "rank": 52}, {"token": " new", "probability": 0.002300873037480987, "token_id": 501, "rank": 53}, {"token": " identify", "probability": 0.0022927716322832885, "token_id": 10542, "rank": 54}, {"token": " emotional", "probability": 0.0022383562251303774, "token_id": 14269, "rank": 55}, {"token": " consider", "probability": 0.002237617786847166, "token_id": 2908, "rank": 56}, {"token": " thoughts", "probability": 0.0022302934776359173, "token_id": 11303, "rank": 57}, {"token": " hobbies", "probability": 0.002205235229864485, "token_id": 63305, "rank": 58}, {"token": " lack", "probability": 0.002185628752571321, "token_id": 6853, "rank": 59}, {"token": " members", "probability": 0.0021371699053301463, "token_id": 3613, "rank": 60}, {"token": " often", "probability": 0.002091617118154093, "token_id": 3545, "rank": 61}, {"token": " acknowledge", "probability": 0.002058279122742167, "token_id": 24645, "rank": 62}, {"token": " intelligence", "probability": 0.0020191270378499045, "token_id": 11229, "rank": 63}, {"token": " understand", "probability": 0.0019989146844227495, "token_id": 3535, "rank": 64}, {"token": " better", "probability": 0.001990190283862127, "token_id": 2664, "rank": 65}, {"token": " factors", "probability": 0.00197424226200729, "token_id": 9363, "rank": 66}, {"token": " beneficial", "probability": 0.0019712333078492775, "token_id": 23699, "rank": 67}, {"token": " facing", "probability": 0.001970240406496776, "token_id": 12880, "rank": 68}, {"token": " lacks", "probability": 0.0019664980600948697, "token_id": 36756, "rank": 69}, {"token": " low", "probability": 0.001961365802722826, "token_id": 3347, "rank": 70}, {"token": " helps", "probability": 0.0019419104858064968, "token_id": 8609, "rank": 71}, {"token": " seeking", "probability": 0.0019387813332748481, "token_id": 10887, "rank": 72}, {"token": " helpful", "probability": 0.0019236887522758946, "token_id": 10950, "rank": 73}, {"token": " involves", "probability": 0.0019228503384067092, "token_id": 17601, "rank": 74}, {"token": " issue", "probability": 0.0018830290682112759, "token_id": 4265, "rank": 75}, {"token": " meaning", "probability": 0.0018811619282861555, "token_id": 7290, "rank": 76}, {"token": " since", "probability": 0.001863802234715463, "token_id": 2474, "rank": 77}, {"token": " contribute", "probability": 0.0018533671204812331, "token_id": 16792, "rank": 78}, {"token": " regarding", "probability": 0.0018515705629338908, "token_id": 8826, "rank": 79}, {"token": " triggers", "probability": 0.0018465295542518443, "token_id": 30754, "rank": 80}, {"token": " needs", "probability": 0.0018326585702063472, "token_id": 3880, "rank": 81}, {"token": " tough", "probability": 0.0018113255267900562, "token_id": 11045, "rank": 82}, {"token": " manage", "probability": 0.0018111661207361948, "token_id": 10091, "rank": 83}, {"token": " task", "probability": 0.0017989329658035281, "token_id": 3383, "rank": 84}, {"token": " achievable", "probability": 0.0017715096201041986, "token_id": 88153, "rank": 85}, {"token": " professionals", "probability": 0.001733124650549002, "token_id": 15387, "rank": 86}, {"token": ">The", "probability": 0.0017320134068923945, "token_id": 16357, "rank": 87}, {"token": "aging", "probability": 0.0017290428087124274, "token_id": 4118, "rank": 88}, {"token": " purpose", "probability": 0.0017120191137487088, "token_id": 7428, "rank": 89}, {"token": " underlying", "probability": 0.001701628572463136, "token_id": 16533, "rank": 90}, {"token": " joy", "probability": 0.0017008970230732597, "token_id": 15888, "rank": 91}, {"token": " requires", "probability": 0.001675745891190949, "token_id": 7460, "rank": 92}, {"token": " offer", "probability": 0.0016693891099036737, "token_id": 3010, "rank": 93}, {"token": " Japan", "probability": 0.0016570217262542035, "token_id": 6323, "rank": 94}, {"token": " emergency", "probability": 0.0016498800075171265, "token_id": 12851, "rank": 95}, {"token": " involve", "probability": 0.0016492917137779749, "token_id": 21058, "rank": 96}, {"token": " counselor", "probability": 0.0016404542867746654, "token_id": 61375, "rank": 97}, {"token": "idal", "probability": 0.0016132967741935484, "token_id": 25880, "rank": 98}, {"token": " negative", "probability": 0.0015993992233208469, "token_id": 8225, "rank": 99}, {"token": "ic", "probability": 0.001583709091470759, "token_id": 292, "rank": 100}]}, {"name": "Family Duty & Obligations", "color": "#c9be27", "layer": 62, "segment": "thought", "n_questions": 20, "total_tokens_in_dist": 6395, "top_n_mass": 0.3595, "tokens": [{"token": "thought", "probability": 0.02485961943117479, "token_id": 60565, "rank": 1}, {"token": " family", "probability": 0.01592425383888065, "token_id": 2997, "rank": 2}, {"token": "'s", "probability": 0.015072144626771852, "token_id": 594, "rank": 3}, {"token": " personal", "probability": 0.013702544686702855, "token_id": 4345, "rank": 4}, {"token": " situation", "probability": 0.009559430910583925, "token_id": 6534, "rank": 5}, {"token": " might", "probability": 0.009550743722417215, "token_id": 2578, "rank": 6}, {"token": " important", "probability": 0.009246832320390941, "token_id": 2989, "rank": 7}, {"token": " financial", "probability": 0.00898321908603805, "token_id": 5896, "rank": 8}, {"token": " giving", "probability": 0.006723919595673355, "token_id": 7086, "rank": 9}, {"token": " first", "probability": 0.005595367730298657, "token_id": 1156, "rank": 10}, {"token": " someone", "probability": 0.005526094886581254, "token_id": 4325, "rank": 11}, {"token": " think", "probability": 0.005421545992716077, "token_id": 1744, "rank": 12}, {"token": " considering", "probability": 0.005147821410778901, "token_id": 12831, "rank": 13}, {"token": " without", "probability": 0.005140253350899913, "token_id": 2041, "rank": 14}, {"token": " whether", "probability": 0.005016637153611463, "token_id": 3425, "rank": 15}, {"token": " money", "probability": 0.005013395106240387, "token_id": 3220, "rank": 16}, {"token": " parents", "probability": 0.004959873125516852, "token_id": 6562, "rank": 17}, {"token": " consider", "probability": 0.004872743898535155, "token_id": 2908, "rank": 18}, {"token": "'t", "probability": 0.0047940824561677215, "token_id": 944, "rank": 19}, {"token": " speaking", "probability": 0.004708461816438876, "token_id": 12094, "rank": 20}, {"token": " emotional", "probability": 0.0046515350850025216, "token_id": 14269, "rank": 21}, {"token": " communication", "probability": 0.004338519967422963, "token_id": 10535, "rank": 22}, {"token": " depending", "probability": 0.004141006633097258, "token_id": 11649, "rank": 23}, {"token": " members", "probability": 0.0041378258449840805, "token_id": 3613, "rank": 24}, {"token": " support", "probability": 0.004131803318286937, "token_id": 1824, "rank": 25}, {"token": " step", "probability": 0.004120843120445185, "token_id": 3019, "rank": 26}, {"token": " siblings", "probability": 0.004097310942732154, "token_id": 36683, "rank": 27}, {"token": "'re", "probability": 0.003914326486314552, "token_id": 2299, "rank": 28}, {"token": " including", "probability": 0.0036630387924507742, "token_id": 2670, "rank": 29}, {"token": " need", "probability": 0.0033243047525899614, "token_id": 1184, "rank": 30}, {"token": " involves", "probability": 0.0032451372343038376, "token_id": 17601, "rank": 31}, {"token": " often", "probability": 0.003241346685923368, "token_id": 3545, "rank": 32}, {"token": " needs", "probability": 0.0031061714969726696, "token_id": 3880, "rank": 33}, {"token": "ought", "probability": 0.0030536127212997958, "token_id": 2450, "rank": 34}, {"token": " income", "probability": 0.002899351684876857, "token_id": 7911, "rank": 35}, {"token": " sounds", "probability": 0.002894721897507636, "token_id": 10362, "rank": 36}, {"token": " due", "probability": 0.0028719371098027296, "token_id": 4152, "rank": 37}, {"token": " provide", "probability": 0.0026793674348154174, "token_id": 3410, "rank": 38}, {"token": " may", "probability": 0.0026380831920750497, "token_id": 1231, "rank": 39}, {"token": " regarding", "probability": 0.002605931527695816, "token_id": 8826, "rank": 40}, {"token": " give", "probability": 0.0025764143336968796, "token_id": 2968, "rank": 41}, {"token": ">The", "probability": 0.002525729583509397, "token_id": 16357, "rank": 42}, {"token": " life", "probability": 0.002524509577847807, "token_id": 2272, "rank": 43}, {"token": " vary", "probability": 0.0024579019002061832, "token_id": 13289, "rank": 44}, {"token": "First", "probability": 0.0024557686782730754, "token_id": 5338, "rank": 45}, {"token": " legal", "probability": 0.002441391396408739, "token_id": 5777, "rank": 46}, {"token": " everyone", "probability": 0.0024379081423172738, "token_id": 5019, "rank": 47}, {"token": " based", "probability": 0.0024307285636979994, "token_id": 3118, "rank": 48}, {"token": " away", "probability": 0.002413018278016549, "token_id": 3123, "rank": 49}, {"token": " towards", "probability": 0.002404326058520674, "token_id": 6974, "rank": 50}, {"token": " values", "probability": 0.0023626698142289503, "token_id": 2750, "rank": 51}, {"token": " guidance", "probability": 0.0023499833162966277, "token_id": 18821, "rank": 52}, {"token": " care", "probability": 0.0023212408393870876, "token_id": 2453, "rank": 53}, {"token": " significant", "probability": 0.0022604576367056613, "token_id": 5089, "rank": 54}, {"token": " involve", "probability": 0.002216780073868744, "token_id": 21058, "rank": 55}, {"token": " health", "probability": 0.0022023184447541744, "token_id": 2820, "rank": 56}, {"token": " within", "probability": 0.002200821844142633, "token_id": 2878, "rank": 57}, {"token": " feelings", "probability": 0.0021683067634465257, "token_id": 15650, "rank": 58}, {"token": " close", "probability": 0.002167901296952136, "token_id": 3265, "rank": 59}, {"token": " happiness", "probability": 0.002133660346434682, "token_id": 23009, "rank": 60}, {"token": "ly", "probability": 0.0020958922921221206, "token_id": 398, "rank": 61}, {"token": " information", "probability": 0.0020900420499410633, "token_id": 1995, "rank": 62}, {"token": " facing", "probability": 0.0020747881193934124, "token_id": 12880, "rank": 63}, {"token": " several", "probability": 0.002070639747612484, "token_id": 3807, "rank": 64}, {"token": " factors", "probability": 0.0020321503134177704, "token_id": 9363, "rank": 65}, {"token": " crucial", "probability": 0.00203115358327335, "token_id": 16587, "rank": 66}, {"token": " upon", "probability": 0.002016541991067561, "token_id": 5193, "rank": 67}, {"token": " feel", "probability": 0.0019901393547991043, "token_id": 2666, "rank": 68}, {"token": " deeply", "probability": 0.0019600811124605684, "token_id": 17247, "rank": 69}, {"token": "ically", "probability": 0.001935860102207796, "token_id": 2673, "rank": 70}, {"token": " challenging", "probability": 0.0019334477781373413, "token_id": 17003, "rank": 71}, {"token": " material", "probability": 0.001930678279970642, "token_id": 3684, "rank": 72}, {"token": " context", "probability": 0.0019296267856923424, "token_id": 2266, "rank": 73}, {"token": " obligations", "probability": 0.001920723128700307, "token_id": 29155, "rank": 74}, {"token": " intelligence", "probability": 0.0019153612529817451, "token_id": 11229, "rank": 75}, {"token": " concerns", "probability": 0.0019099563852810052, "token_id": 10520, "rank": 76}, {"token": " depends", "probability": 0.0018793999262793418, "token_id": 13798, "rank": 77}, {"token": " expectations", "probability": 0.0018762968250270837, "token_id": 16665, "rank": 78}, {"token": " gifts", "probability": 0.0018735800351143018, "token_id": 20609, "rank": 79}, {"token": " First", "probability": 0.0018548645093125963, "token_id": 5512, "rank": 80}, {"token": " help", "probability": 0.0018284341631383907, "token_id": 1492, "rank": 81}, {"token": " issue", "probability": 0.001822487685555684, "token_id": 4265, "rank": 82}, {"token": " stability", "probability": 0.001821581988763728, "token_id": 19753, "rank": 83}, {"token": " home", "probability": 0.001778671749411965, "token_id": 2114, "rank": 84}, {"token": " artificial", "probability": 0.001737979190396207, "token_id": 20443, "rank": 85}, {"token": "1", "probability": 0.0017165107526208498, "token_id": 16, "rank": 86}, {"token": " goals", "probability": 0.001705840218877273, "token_id": 8845, "rank": 87}, {"token": " donate", "probability": 0.0017049841470059828, "token_id": 31909, "rank": 88}, {"token": " others", "probability": 0.0016950799494807878, "token_id": 3800, "rank": 89}, {"token": " sense", "probability": 0.0016759434936782984, "token_id": 5530, "rank": 90}, {"token": " donating", "probability": 0.00165350925741724, "token_id": 60859, "rank": 91}, {"token": " gratitude", "probability": 0.0016424334632964568, "token_id": 45035, "rank": 92}, {"token": " individuals", "probability": 0.0016324897230067573, "token_id": 7775, "rank": 93}, {"token": "Reflect", "probability": 0.0016162256174389363, "token_id": 72789, "rank": 94}, {"token": " time", "probability": 0.0016134244583921081, "token_id": 882, "rank": 95}, {"token": " throughout", "probability": 0.001609016654470909, "token_id": 6814, "rank": 96}, {"token": " show", "probability": 0.0015963396642614928, "token_id": 1473, "rank": 97}, {"token": " readiness", "probability": 0.0015844419797639178, "token_id": 61692, "rank": 98}, {"token": "-being", "probability": 0.001580648261322896, "token_id": 32751, "rank": 99}, {"token": " cultural", "probability": 0.0015790160767378786, "token_id": 12752, "rank": 100}]}, {"name": "Grief, Loss & Death", "color": "#2ec4c4", "layer": 62, "segment": "thought", "n_questions": 10, "total_tokens_in_dist": 5456, "top_n_mass": 0.381, "tokens": [{"token": "thought", "probability": 0.021940790599682437, "token_id": 60565, "rank": 1}, {"token": "'s", "probability": 0.014010484864511785, "token_id": 594, "rank": 2}, {"token": " without", "probability": 0.01090263067762432, "token_id": 2041, "rank": 3}, {"token": " death", "probability": 0.008292047301071147, "token_id": 4545, "rank": 4}, {"token": " support", "probability": 0.00822280319555434, "token_id": 1824, "rank": 5}, {"token": " including", "probability": 0.007943731853213499, "token_id": 2670, "rank": 6}, {"token": " life", "probability": 0.007822259111704692, "token_id": 2272, "rank": 7}, {"token": " important", "probability": 0.007477995841981437, "token_id": 2989, "rank": 8}, {"token": " facing", "probability": 0.006871685775813025, "token_id": 12880, "rank": 9}, {"token": " might", "probability": 0.0064820680664608886, "token_id": 2578, "rank": 10}, {"token": " Eli", "probability": 0.006371863826977929, "token_id": 33262, "rank": 11}, {"token": " someone", "probability": 0.006097707732648871, "token_id": 4325, "rank": 12}, {"token": " regarding", "probability": 0.005484303450624983, "token_id": 8826, "rank": 13}, {"token": " loved", "probability": 0.005467795639917641, "token_id": 10245, "rank": 14}, {"token": " speaking", "probability": 0.0054286444864435675, "token_id": 12094, "rank": 15}, {"token": "ly", "probability": 0.005409650636602337, "token_id": 398, "rank": 16}, {"token": " end", "probability": 0.005234492533606509, "token_id": 835, "rank": 17}, {"token": " help", "probability": 0.005127619352989556, "token_id": 1492, "rank": 18}, {"token": " depending", "probability": 0.005084822342644418, "token_id": 11649, "rank": 19}, {"token": " emotions", "probability": 0.004990356467957853, "token_id": 21261, "rank": 20}, {"token": " burial", "probability": 0.004816901788271669, "token_id": 54663, "rank": 21}, {"token": " private", "probability": 0.004540712909101016, "token_id": 869, "rank": 22}, {"token": " involves", "probability": 0.004539320684374894, "token_id": 17601, "rank": 23}, {"token": " parents", "probability": 0.004461896532600618, "token_id": 6562, "rank": 24}, {"token": " often", "probability": 0.004144593908768803, "token_id": 3545, "rank": 25}, {"token": " individual", "probability": 0.004111370236702091, "token_id": 3842, "rank": 26}, {"token": " refers", "probability": 0.004107782041432971, "token_id": 19257, "rank": 27}, {"token": " due", "probability": 0.004092321743692841, "token_id": 4152, "rank": 28}, {"token": " vary", "probability": 0.003956104827424443, "token_id": 13289, "rank": 29}, {"token": " steps", "probability": 0.003934402104804571, "token_id": 7354, "rank": 30}, {"token": " future", "probability": 0.0038458229106906098, "token_id": 3853, "rank": 31}, {"token": " soul", "probability": 0.003830710559989912, "token_id": 13527, "rank": 32}, {"token": " Cohen", "probability": 0.0037973797427782465, "token_id": 31096, "rank": 33}, {"token": " emotional", "probability": 0.00373423520302721, "token_id": 14269, "rank": 34}, {"token": " vital", "probability": 0.0036440896862941843, "token_id": 16198, "rank": 35}, {"token": " acknowledge", "probability": 0.0036187832595802683, "token_id": 24645, "rank": 36}, {"token": " grief", "probability": 0.0034827379836138346, "token_id": 37284, "rank": 37}, {"token": " existence", "probability": 0.0034599547029899288, "token_id": 13885, "rank": 38}, {"token": " available", "probability": 0.0034027947435046175, "token_id": 2500, "rank": 39}, {"token": " may", "probability": 0.003342466891184508, "token_id": 1231, "rank": 40}, {"token": " biological", "probability": 0.003315004414519216, "token_id": 23275, "rank": 41}, {"token": " whether", "probability": 0.0032809866833637354, "token_id": 3425, "rank": 42}, {"token": " yet", "probability": 0.003216039813680363, "token_id": 3602, "rank": 43}, {"token": " genuine", "probability": 0.0031990342282046946, "token_id": 22011, "rank": 44}, {"token": " widely", "probability": 0.0031663679619117597, "token_id": 13570, "rank": 45}, {"token": " consider", "probability": 0.0031150161191976626, "token_id": 2908, "rank": 46}, {"token": " likely", "probability": 0.0031091496358538837, "token_id": 4363, "rank": 47}, {"token": " considering", "probability": 0.0030992496108601165, "token_id": 12831, "rank": 48}, {"token": " public", "probability": 0.003023930542574948, "token_id": 584, "rank": 49}, {"token": " systems", "probability": 0.0030023764702912566, "token_id": 5942, "rank": 50}, {"token": " time", "probability": 0.0028359609580776426, "token_id": 882, "rank": 51}, {"token": " personal", "probability": 0.002817524547034501, "token_id": 4345, "rank": 52}, {"token": " post", "probability": 0.002795858318229689, "token_id": 1736, "rank": 53}, {"token": " sensitive", "probability": 0.0027754334720295946, "token_id": 16216, "rank": 54}, {"token": " body", "probability": 0.002758994262312805, "token_id": 2487, "rank": 55}, {"token": " religious", "probability": 0.0026944163577318743, "token_id": 10381, "rank": 56}, {"token": " situation", "probability": 0.0026684521798128118, "token_id": 6534, "rank": 57}, {"token": " figure", "probability": 0.0026219437890195006, "token_id": 7071, "rank": 58}, {"token": " child", "probability": 0.002580191260789978, "token_id": 1682, "rank": 59}, {"token": " following", "probability": 0.0025684883353535052, "token_id": 2701, "rank": 60}, {"token": " organism", "probability": 0.0025400018344199646, "token_id": 46020, "rank": 61}, {"token": ">The", "probability": 0.0024922490736732795, "token_id": 16357, "rank": 62}, {"token": "ation", "probability": 0.0024823169206923275, "token_id": 367, "rank": 63}, {"token": "life", "probability": 0.002452426963568362, "token_id": 14450, "rank": 64}, {"token": " visiting", "probability": 0.0024492426835676694, "token_id": 16721, "rank": 65}, {"token": "arnation", "probability": 0.002446697883507833, "token_id": 54049, "rank": 66}, {"token": "’s", "probability": 0.002442250311929116, "token_id": 748, "rank": 67}, {"token": "ologically", "probability": 0.0024410728369322413, "token_id": 29350, "rank": 68}, {"token": "ically", "probability": 0.002439775485232067, "token_id": 2673, "rank": 69}, {"token": " days", "probability": 0.002437186231339997, "token_id": 2849, "rank": 70}, {"token": " confusion", "probability": 0.002375120885272514, "token_id": 21340, "rank": 71}, {"token": " Bi", "probability": 0.002373284634905614, "token_id": 12100, "rank": 72}, {"token": " belief", "probability": 0.0023486444131524155, "token_id": 16396, "rank": 73}, {"token": " seeking", "probability": 0.0023479216570242824, "token_id": 10887, "rank": 74}, {"token": " decomposition", "probability": 0.002333488565879824, "token_id": 65166, "rank": 75}, {"token": " Philosoph", "probability": 0.002299803020054836, "token_id": 37256, "rank": 76}, {"token": " provide", "probability": 0.0022994234256253545, "token_id": 3410, "rank": 77}, {"token": " necessary", "probability": 0.002266025177348044, "token_id": 5871, "rank": 78}, {"token": " beliefs", "probability": 0.00226538353148071, "token_id": 20799, "rank": 79}, {"token": " functions", "probability": 0.0022295973552378936, "token_id": 5746, "rank": 80}, {"token": " need", "probability": 0.0022290111739144227, "token_id": 1184, "rank": 81}, {"token": " loss", "probability": 0.0022182680309281604, "token_id": 4709, "rank": 82}, {"token": " ahead", "probability": 0.0022051674343846464, "token_id": 8305, "rank": 83}, {"token": " loses", "probability": 0.0021605720078260943, "token_id": 32191, "rank": 84}, {"token": " others", "probability": 0.0021392344539830402, "token_id": 3800, "rank": 85}, {"token": " rather", "probability": 0.002127903572844382, "token_id": 4751, "rank": 86}, {"token": " empathy", "probability": 0.002092606364809417, "token_id": 47351, "rank": 87}, {"token": " action", "probability": 0.0020854458666563136, "token_id": 1917, "rank": 88}, {"token": " typically", "probability": 0.0020568344847568427, "token_id": 11136, "rank": 89}, {"token": " graves", "probability": 0.0020370776998229795, "token_id": 61181, "rank": 90}, {"token": " factors", "probability": 0.0020178325755248368, "token_id": 9363, "rank": 91}, {"token": " related", "probability": 0.0020169869771718306, "token_id": 5435, "rank": 92}, {"token": " process", "probability": 0.001999861515821204, "token_id": 1882, "rank": 93}, {"token": " irreversible", "probability": 0.001990696687240918, "token_id": 92194, "rank": 94}, {"token": " cessation", "probability": 0.001988208096201114, "token_id": 82360, "rank": 95}, {"token": " within", "probability": 0.001972209799572663, "token_id": 2878, "rank": 96}, {"token": " several", "probability": 0.0019717580385287333, "token_id": 3807, "rank": 97}, {"token": " week", "probability": 0.0019579557646672054, "token_id": 2003, "rank": 98}, {"token": " environmental", "probability": 0.0019332092958765554, "token_id": 12158, "rank": 99}, {"token": " sadness", "probability": 0.0019105232106910355, "token_id": 50878, "rank": 100}]}, {"name": "Human Nature & Philosophy", "color": "#3db85e", "layer": 62, "segment": "thought", "n_questions": 30, "total_tokens_in_dist": 10859, "top_n_mass": 0.2839, "tokens": [{"token": "thought", "probability": 0.013220695761460819, "token_id": 60565, "rank": 1}, {"token": "'s", "probability": 0.011290087336895956, "token_id": 594, "rank": 2}, {"token": " life", "probability": 0.009138232786505496, "token_id": 2272, "rank": 3}, {"token": " often", "probability": 0.008396822061090414, "token_id": 3545, "rank": 4}, {"token": " personal", "probability": 0.005846699791389727, "token_id": 4345, "rank": 5}, {"token": " within", "probability": 0.005615351904914205, "token_id": 2878, "rank": 6}, {"token": " philosophical", "probability": 0.005016826438025941, "token_id": 40803, "rank": 7}, {"token": " important", "probability": 0.004856502442694655, "token_id": 2989, "rank": 8}, {"token": " question", "probability": 0.004821465673212643, "token_id": 3405, "rank": 9}, {"token": " truth", "probability": 0.004658611199259325, "token_id": 8046, "rank": 10}, {"token": " based", "probability": 0.004643430999020406, "token_id": 3118, "rank": 11}, {"token": " suffering", "probability": 0.00438388252236012, "token_id": 15691, "rank": 12}, {"token": " vary", "probability": 0.004340295422893001, "token_id": 13289, "rank": 13}, {"token": " speaking", "probability": 0.004274471021031503, "token_id": 12094, "rank": 14}, {"token": " people", "probability": 0.00423933516430501, "token_id": 1251, "rank": 15}, {"token": " considering", "probability": 0.004213505589443594, "token_id": 12831, "rank": 16}, {"token": " might", "probability": 0.0037190186299607317, "token_id": 2578, "rank": 17}, {"token": " factors", "probability": 0.003570390131921006, "token_id": 9363, "rank": 18}, {"token": " whether", "probability": 0.0035135412161296183, "token_id": 3425, "rank": 19}, {"token": " human", "probability": 0.0035034835711615533, "token_id": 3738, "rank": 20}, {"token": " without", "probability": 0.003220983332839246, "token_id": 2041, "rank": 21}, {"token": " good", "probability": 0.0031031184265536502, "token_id": 1661, "rank": 22}, {"token": " depending", "probability": 0.003049542462103938, "token_id": 11649, "rank": 23}, {"token": " perspectives", "probability": 0.003038802814809906, "token_id": 38455, "rank": 24}, {"token": "ought", "probability": 0.0030229808993847656, "token_id": 2450, "rank": 25}, {"token": " upon", "probability": 0.0030213176597753606, "token_id": 5193, "rank": 26}, {"token": " belief", "probability": 0.0030163849238595878, "token_id": 16396, "rank": 27}, {"token": " actions", "probability": 0.002998451226975651, "token_id": 6168, "rank": 28}, {"token": " others", "probability": 0.0029655961185066303, "token_id": 3800, "rank": 29}, {"token": " due", "probability": 0.0029268420576810303, "token_id": 4152, "rank": 30}, {"token": " individuals", "probability": 0.002911787200887611, "token_id": 7775, "rank": 31}, {"token": " varies", "probability": 0.0028922874641534807, "token_id": 34227, "rank": 32}, {"token": " different", "probability": 0.0028835092522474697, "token_id": 2155, "rank": 33}, {"token": " purpose", "probability": 0.002742747627836346, "token_id": 7428, "rank": 34}, {"token": " psychological", "probability": 0.0026949184799264863, "token_id": 23187, "rank": 35}, {"token": " throughout", "probability": 0.002651970075058729, "token_id": 6814, "rank": 36}, {"token": " beliefs", "probability": 0.002651120231349773, "token_id": 20799, "rank": 37}, {"token": " humans", "probability": 0.0025673055644675788, "token_id": 12677, "rank": 38}, {"token": " may", "probability": 0.0025261295932518736, "token_id": 1231, "rank": 39}, {"token": " context", "probability": 0.002445858709298703, "token_id": 2266, "rank": 40}, {"token": "ically", "probability": 0.0024169418269268804, "token_id": 2673, "rank": 41}, {"token": " Philosoph", "probability": 0.002409278387742504, "token_id": 37256, "rank": 42}, {"token": " work", "probability": 0.0023948153995157306, "token_id": 975, "rank": 43}, {"token": " various", "probability": 0.002392992836448007, "token_id": 5257, "rank": 44}, {"token": " philosophy", "probability": 0.0023612968400597762, "token_id": 19128, "rank": 45}, {"token": " several", "probability": 0.002294514660616109, "token_id": 3807, "rank": 46}, {"token": " first", "probability": 0.002259851613567443, "token_id": 1156, "rank": 47}, {"token": " moral", "probability": 0.0022478727903314185, "token_id": 15659, "rank": 48}, {"token": " perspective", "probability": 0.00224565834000118, "token_id": 13057, "rank": 49}, {"token": " evil", "probability": 0.0022038932102709597, "token_id": 13962, "rank": 50}, {"token": " existence", "probability": 0.00219701624237701, "token_id": 13885, "rank": 51}, {"token": " happiness", "probability": 0.0021846247119425375, "token_id": 23009, "rank": 52}, {"token": " argue", "probability": 0.0021375771637074333, "token_id": 17585, "rank": 53}, {"token": " dreams", "probability": 0.0021297145562122616, "token_id": 18707, "rank": 54}, {"token": " theory", "probability": 0.0021186186694714102, "token_id": 10126, "rank": 55}, {"token": " widely", "probability": 0.00209455075437421, "token_id": 13570, "rank": 56}, {"token": " value", "probability": 0.0020689208829741844, "token_id": 897, "rank": 57}, {"token": " change", "probability": 0.002044422029527074, "token_id": 2297, "rank": 58}, {"token": " unique", "probability": 0.001971780820057051, "token_id": 4911, "rank": 59}, {"token": " true", "probability": 0.001969066845025376, "token_id": 830, "rank": 60}, {"token": " lead", "probability": 0.0019312666442216802, "token_id": 2990, "rank": 61}, {"token": " growth", "probability": 0.0019144482973959278, "token_id": 6513, "rank": 62}, {"token": " experiences", "probability": 0.0019142471914560615, "token_id": 11449, "rank": 63}, {"token": " including", "probability": 0.0019099951113548748, "token_id": 2670, "rank": 64}, {"token": " let", "probability": 0.00190910224738388, "token_id": 1077, "rank": 65}, {"token": " positive", "probability": 0.0018847588705593937, "token_id": 6785, "rank": 66}, {"token": " religious", "probability": 0.0018773329129152818, "token_id": 10381, "rank": 67}, {"token": " person", "probability": 0.0018424792828183115, "token_id": 1697, "rank": 68}, {"token": "Reflect", "probability": 0.001842344277162502, "token_id": 72789, "rank": 69}, {"token": " refers", "probability": 0.0018383674518117172, "token_id": 19257, "rank": 70}, {"token": " concept", "probability": 0.0018381251049398228, "token_id": 7286, "rank": 71}, {"token": " play", "probability": 0.001823461608814098, "token_id": 1486, "rank": 72}, {"token": ">The", "probability": 0.0018022708068435322, "token_id": 16357, "rank": 73}, {"token": " things", "probability": 0.0017829153186637342, "token_id": 2513, "rank": 74}, {"token": " something", "probability": 0.0017802920449730734, "token_id": 2494, "rank": 75}, {"token": " recognize", "probability": 0.0017798294413574236, "token_id": 15282, "rank": 76}, {"token": " answer", "probability": 0.0017735319301869813, "token_id": 4226, "rank": 77}, {"token": " identity", "probability": 0.0017581010391819756, "token_id": 9569, "rank": 78}, {"token": " must", "probability": 0.0017566871308404774, "token_id": 1969, "rank": 79}, {"token": "ing", "probability": 0.0017050245341718015, "token_id": 287, "rank": 80}, {"token": " truths", "probability": 0.0017011540082224616, "token_id": 52119, "rank": 81}, {"token": " sense", "probability": 0.001700540559774682, "token_id": 5530, "rank": 82}, {"token": " provide", "probability": 0.0016970539456116491, "token_id": 3410, "rank": 83}, {"token": "—a", "probability": 0.0016944822521425928, "token_id": 27996, "rank": 84}, {"token": " since", "probability": 0.001688561348750202, "token_id": 2474, "rank": 85}, {"token": " nature", "probability": 0.0016677138141935294, "token_id": 6993, "rank": 86}, {"token": " right", "probability": 0.0016673687580862372, "token_id": 1290, "rank": 87}, {"token": " everything", "probability": 0.0016663687318252051, "token_id": 4297, "rank": 88}, {"token": " conditions", "probability": 0.0016366116217078443, "token_id": 4682, "rank": 89}, {"token": " debated", "probability": 0.001622001315781784, "token_id": 58574, "rank": 90}, {"token": " quality", "probability": 0.0016206992535529935, "token_id": 4271, "rank": 91}, {"token": " believe", "probability": 0.0016182949704831033, "token_id": 4411, "rank": 92}, {"token": " necessary", "probability": 0.0015927281446889735, "token_id": 5871, "rank": 93}, {"token": " individual", "probability": 0.0015910767917609162, "token_id": 3842, "rank": 94}, {"token": " Yin", "probability": 0.001585790341392931, "token_id": 82858, "rank": 95}, {"token": " meaning", "probability": 0.001584917321440665, "token_id": 7290, "rank": 96}, {"token": " societal", "probability": 0.0015695075232431668, "token_id": 58429, "rank": 97}, {"token": " particularly", "probability": 0.0015641873103557275, "token_id": 7945, "rank": 98}, {"token": "—it", "probability": 0.0015331307759899042, "token_id": 43503, "rank": 99}, {"token": " animals", "probability": 0.0015277405840441087, "token_id": 9898, "rank": 100}]}, {"name": "Law, Politics, Government & History", "color": "#eb6834", "layer": 62, "segment": "thought", "n_questions": 40, "total_tokens_in_dist": 15232, "top_n_mass": 0.2585, "tokens": [{"token": "thought", "probability": 0.019750297914125893, "token_id": 60565, "rank": 1}, {"token": "'s", "probability": 0.011834940409131502, "token_id": 594, "rank": 2}, {"token": " within", "probability": 0.00660818786011792, "token_id": 2878, "rank": 3}, {"token": " law", "probability": 0.006357729567403128, "token_id": 2329, "rank": 4}, {"token": " let", "probability": 0.006126997618914778, "token_id": 1077, "rank": 5}, {"token": "ly", "probability": 0.005584307307028813, "token_id": 398, "rank": 6}, {"token": " need", "probability": 0.005434413512368485, "token_id": 1184, "rank": 7}, {"token": " federal", "probability": 0.0052199164877885975, "token_id": 6775, "rank": 8}, {"token": "2", "probability": 0.005083013883902137, "token_id": 17, "rank": 9}, {"token": " due", "probability": 0.004694942593836567, "token_id": 4152, "rank": 10}, {"token": "0", "probability": 0.004470675221371532, "token_id": 15, "rank": 11}, {"token": "1", "probability": 0.0037065322678938315, "token_id": 16, "rank": 12}, {"token": " United", "probability": 0.0037054932627733905, "token_id": 3639, "rank": 13}, {"token": " consider", "probability": 0.0036534326112198554, "token_id": 2908, "rank": 14}, {"token": " key", "probability": 0.003547762989251512, "token_id": 1376, "rank": 15}, {"token": " regarding", "probability": 0.003402336703398046, "token_id": 8826, "rank": 16}, {"token": " including", "probability": 0.0033438666160556943, "token_id": 2670, "rank": 17}, {"token": " important", "probability": 0.003183684262173517, "token_id": 2989, "rank": 18}, {"token": " without", "probability": 0.003055214565359878, "token_id": 2041, "rank": 19}, {"token": " based", "probability": 0.003005111805437255, "token_id": 3118, "rank": 20}, {"token": " international", "probability": 0.0029580028544873545, "token_id": 6489, "rank": 21}, {"token": "First", "probability": 0.0029484216911684464, "token_id": 5338, "rank": 22}, {"token": " typically", "probability": 0.0029422604079399573, "token_id": 11136, "rank": 23}, {"token": " system", "probability": 0.0029414986157018683, "token_id": 1849, "rank": 24}, {"token": " election", "probability": 0.002832159281459368, "token_id": 6223, "rank": 25}, {"token": " countries", "probability": 0.0027829665882031897, "token_id": 5837, "rank": 26}, {"token": " since", "probability": 0.002773150561627389, "token_id": 2474, "rank": 27}, {"token": "'ll", "probability": 0.0027616285036747472, "token_id": 3278, "rank": 28}, {"token": " political", "probability": 0.002735474662404991, "token_id": 4948, "rank": 29}, {"token": " might", "probability": 0.0026762259190611323, "token_id": 2578, "rank": 30}, {"token": " whether", "probability": 0.0026460856795131877, "token_id": 3425, "rank": 31}, {"token": " government", "probability": 0.0025046029428164303, "token_id": 3033, "rank": 32}, {"token": " U", "probability": 0.00241980346898929, "token_id": 547, "rank": 33}, {"token": " President", "probability": 0.002380706839427306, "token_id": 4795, "rank": 34}, {"token": " state", "probability": 0.0022956940194010806, "token_id": 1584, "rank": 35}, {"token": " Ethiopia", "probability": 0.0022399364552610325, "token_id": 59357, "rank": 36}, {"token": " constitutional", "probability": 0.0022274698546552755, "token_id": 24526, "rank": 37}, {"token": " States", "probability": 0.002167943464610787, "token_id": 4180, "rank": 38}, {"token": " define", "probability": 0.0021031163094323976, "token_id": 6979, "rank": 39}, {"token": " directly", "probability": 0.0020881896998019758, "token_id": 5961, "rank": 40}, {"token": " current", "probability": 0.002063852286157733, "token_id": 1482, "rank": 41}, {"token": " considering", "probability": 0.002047089053805896, "token_id": 12831, "rank": 42}, {"token": " several", "probability": 0.0020410595863575498, "token_id": 3807, "rank": 43}, {"token": " known", "probability": 0.0019790165972072607, "token_id": 3881, "rank": 44}, {"token": " significant", "probability": 0.0019775621155792658, "token_id": 5089, "rank": 45}, {"token": " primarily", "probability": 0.0019183056985659299, "token_id": 15503, "rank": 46}, {"token": " context", "probability": 0.0018906660377452865, "token_id": 2266, "rank": 47}, {"token": " economic", "probability": 0.0018423807052158985, "token_id": 6955, "rank": 48}, {"token": " across", "probability": 0.0018244110679014485, "token_id": 3941, "rank": 49}, {"token": " include", "probability": 0.0018165462864176013, "token_id": 2924, "rank": 50}, {"token": " provide", "probability": 0.0018150035741299948, "token_id": 3410, "rank": 51}, {"token": " parties", "probability": 0.0017929391798247242, "token_id": 9677, "rank": 52}, {"token": " laws", "probability": 0.0017927433153600235, "token_id": 6872, "rank": 53}, {"token": " operates", "probability": 0.0017834440869743512, "token_id": 26057, "rank": 54}, {"token": " specific", "probability": 0.001778981124119565, "token_id": 3151, "rank": 55}, {"token": ">The", "probability": 0.001751955457936421, "token_id": 16357, "rank": 56}, {"token": " Russia", "probability": 0.001750742802617682, "token_id": 8359, "rank": 57}, {"token": " towards", "probability": 0.0017443844522698725, "token_id": 6974, "rank": 58}, {"token": ".S", "probability": 0.0017296008965643234, "token_id": 808, "rank": 59}, {"token": "9", "probability": 0.0017114692257456051, "token_id": 24, "rank": 60}, {"token": " tax", "probability": 0.001711339026398809, "token_id": 3742, "rank": 61}, {"token": " time", "probability": 0.0016669326553852345, "token_id": 882, "rank": 62}, {"token": " leading", "probability": 0.0016504568500707959, "token_id": 6388, "rank": 63}, {"token": " legal", "probability": 0.0016485144282383547, "token_id": 5777, "rank": 64}, {"token": " conflicts", "probability": 0.001640004197201316, "token_id": 25800, "rank": 65}, {"token": " traffic", "probability": 0.0016354342799305612, "token_id": 9442, "rank": 66}, {"token": " influence", "probability": 0.0016258068790898663, "token_id": 10173, "rank": 67}, {"token": "th", "probability": 0.0016232955711407062, "token_id": 339, "rank": 68}, {"token": " Ethiopian", "probability": 0.0016033101706832027, "token_id": 95534, "rank": 69}, {"token": " conflict", "probability": 0.0015962064668167755, "token_id": 12055, "rank": 70}, {"token": " However", "probability": 0.0015877729201181682, "token_id": 4354, "rank": 71}, {"token": " compare", "probability": 0.001585712088041779, "token_id": 9429, "rank": 72}, {"token": " World", "probability": 0.001582269167570571, "token_id": 4337, "rank": 73}, {"token": " may", "probability": 0.0015756093138337766, "token_id": 1231, "rank": 74}, {"token": " judicial", "probability": 0.0015399512866563177, "token_id": 30652, "rank": 75}, {"token": " according", "probability": 0.001522938294209958, "token_id": 4092, "rank": 76}, {"token": " city", "probability": 0.0014968945129444813, "token_id": 3283, "rank": 77}, {"token": " roles", "probability": 0.0014921566514168037, "token_id": 12783, "rank": 78}, {"token": " around", "probability": 0.0014916581579742512, "token_id": 2163, "rank": 79}, {"token": " attorney", "probability": 0.0014679670890617804, "token_id": 13747, "rank": 80}, {"token": " jurisdiction", "probability": 0.0014232356579520324, "token_id": 28001, "rank": 81}, {"token": " agreements", "probability": 0.0014079851605796577, "token_id": 19473, "rank": 82}, {"token": " often", "probability": 0.0013908290460869122, "token_id": 3545, "rank": 83}, {"token": " Election", "probability": 0.0013693749057246635, "token_id": 25754, "rank": 84}, {"token": " elections", "probability": 0.0013592890036703536, "token_id": 15991, "rank": 85}, {"token": " holiday", "probability": 0.0013549656199277186, "token_id": 13257, "rank": 86}, {"token": " powers", "probability": 0.0013507047508667597, "token_id": 13430, "rank": 87}, {"token": " specifically", "probability": 0.0013457949455598528, "token_id": 11689, "rank": 88}, {"token": " tariff", "probability": 0.001334171061989862, "token_id": 60261, "rank": 89}, {"token": " Narendra", "probability": 0.0013328661411470084, "token_id": 66332, "rank": 90}, {"token": " states", "probability": 0.0013233464425758215, "token_id": 5302, "rank": 91}, {"token": " China", "probability": 0.0013130591932739217, "token_id": 5616, "rank": 92}, {"token": " refers", "probability": 0.001293100677603659, "token_id": 19257, "rank": 93}, {"token": " Greek", "probability": 0.0012925287391065173, "token_id": 17860, "rank": 94}, {"token": " particularly", "probability": 0.0012922590964687705, "token_id": 7945, "rank": 95}, {"token": " presidential", "probability": 0.0012917343953030556, "token_id": 13318, "rank": 96}, {"token": "8", "probability": 0.0012783640325383435, "token_id": 23, "rank": 97}, {"token": " followed", "probability": 0.0012627033244420442, "token_id": 8110, "rank": 98}, {"token": " Premier", "probability": 0.0012589591039490558, "token_id": 19637, "rank": 99}, {"token": " disputes", "probability": 0.0012551931721115198, "token_id": 41154, "rank": 100}]}, {"name": "Marriage & Romantic Partnerships", "color": "#e87ba4", "layer": 62, "segment": "thought", "n_questions": 35, "total_tokens_in_dist": 9204, "top_n_mass": 0.3188, "tokens": [{"token": "thought", "probability": 0.02047950677023382, "token_id": 60565, "rank": 1}, {"token": "'s", "probability": 0.016886183650588093, "token_id": 594, "rank": 2}, {"token": " might", "probability": 0.01056097540991904, "token_id": 2578, "rank": 3}, {"token": " personal", "probability": 0.008796579372173987, "token_id": 4345, "rank": 4}, {"token": " important", "probability": 0.008487827976815833, "token_id": 2989, "rank": 5}, {"token": " someone", "probability": 0.0076926955689605855, "token_id": 4325, "rank": 6}, {"token": " feelings", "probability": 0.007169802921100277, "token_id": 15650, "rank": 7}, {"token": " without", "probability": 0.007048702450490987, "token_id": 2041, "rank": 8}, {"token": " whether", "probability": 0.006907874287824117, "token_id": 3425, "rank": 9}, {"token": " marriage", "probability": 0.006584460562094846, "token_id": 10866, "rank": 10}, {"token": " often", "probability": 0.005688872555842669, "token_id": 3545, "rank": 11}, {"token": " within", "probability": 0.005645870840790431, "token_id": 2878, "rank": 12}, {"token": " consider", "probability": 0.0054949031568322215, "token_id": 2908, "rank": 13}, {"token": " based", "probability": 0.005116077123764558, "token_id": 3118, "rank": 14}, {"token": " emotional", "probability": 0.00436820118931412, "token_id": 14269, "rank": 15}, {"token": " relationship", "probability": 0.004238750076777914, "token_id": 5025, "rank": 16}, {"token": " feel", "probability": 0.003990165681105549, "token_id": 2666, "rank": 17}, {"token": " situation", "probability": 0.003972651070651292, "token_id": 6534, "rank": 18}, {"token": " depending", "probability": 0.0039654719158707975, "token_id": 11649, "rank": 19}, {"token": " regarding", "probability": 0.003828634119612173, "token_id": 8826, "rank": 20}, {"token": " due", "probability": 0.0037079039164500576, "token_id": 4152, "rank": 21}, {"token": " love", "probability": 0.0037075208934000833, "token_id": 2948, "rank": 22}, {"token": " towards", "probability": 0.003674689010285382, "token_id": 6974, "rank": 23}, {"token": " first", "probability": 0.003603503454610832, "token_id": 1156, "rank": 24}, {"token": " vary", "probability": 0.003575629933827333, "token_id": 13289, "rank": 25}, {"token": " involves", "probability": 0.0033509850932544206, "token_id": 17601, "rank": 26}, {"token": " may", "probability": 0.0033175212052391745, "token_id": 1231, "rank": 27}, {"token": " individuals", "probability": 0.0031752619278882163, "token_id": 7775, "rank": 28}, {"token": " decision", "probability": 0.0031251535214057444, "token_id": 5480, "rank": 29}, {"token": "ly", "probability": 0.003006342635470404, "token_id": 398, "rank": 30}, {"token": " person", "probability": 0.0029285833577847183, "token_id": 1697, "rank": 31}, {"token": " children", "probability": 0.002796506355575113, "token_id": 2841, "rank": 32}, {"token": " partner", "probability": 0.002789095197232127, "token_id": 8263, "rank": 33}, {"token": " involved", "probability": 0.0027669213223140768, "token_id": 6398, "rank": 34}, {"token": " rather", "probability": 0.002763884225999675, "token_id": 4751, "rank": 35}, {"token": " parties", "probability": 0.0027414617736995317, "token_id": 9677, "rank": 36}, {"token": " respect", "probability": 0.0026212869158298647, "token_id": 5091, "rank": 37}, {"token": " widely", "probability": 0.0026033324718715512, "token_id": 13570, "rank": 38}, {"token": " support", "probability": 0.002383427310875754, "token_id": 1824, "rank": 39}, {"token": " crucial", "probability": 0.0023630428708347586, "token_id": 16587, "rank": 40}, {"token": " upon", "probability": 0.0023609104497035165, "token_id": 5193, "rank": 41}, {"token": " financial", "probability": 0.0023169344100204465, "token_id": 5896, "rank": 42}, {"token": "'re", "probability": 0.0023142336458642386, "token_id": 2299, "rank": 43}, {"token": "—it", "probability": 0.002300602938484523, "token_id": 43503, "rank": 44}, {"token": " life", "probability": 0.0022919194721071406, "token_id": 2272, "rank": 45}, {"token": " considering", "probability": 0.0022612141067379224, "token_id": 12831, "rank": 46}, {"token": " provide", "probability": 0.0022545787517568834, "token_id": 3410, "rank": 47}, {"token": " spouse", "probability": 0.00224225540865425, "token_id": 30980, "rank": 48}, {"token": " romantic", "probability": 0.002231704122434142, "token_id": 23467, "rank": 49}, {"token": ">The", "probability": 0.0022260494912166775, "token_id": 16357, "rank": 50}, {"token": " family", "probability": 0.0021862817074392495, "token_id": 2997, "rank": 51}, {"token": " values", "probability": 0.00216326395055671, "token_id": 2750, "rank": 52}, {"token": " varies", "probability": 0.0021448808874638585, "token_id": 34227, "rank": 53}, {"token": " help", "probability": 0.002120483627882866, "token_id": 1492, "rank": 54}, {"token": "'t", "probability": 0.0021037623575732925, "token_id": 944, "rank": 55}, {"token": " context", "probability": 0.002095052596677316, "token_id": 2266, "rank": 56}, {"token": " roles", "probability": 0.0020517688293802292, "token_id": 12783, "rank": 57}, {"token": " mutual", "probability": 0.002038478905232377, "token_id": 26750, "rank": 58}, {"token": " significant", "probability": 0.0020347492690731606, "token_id": 5089, "rank": 59}, {"token": " requires", "probability": 0.0020312240378964675, "token_id": 7460, "rank": 60}, {"token": " need", "probability": 0.0020255635245024378, "token_id": 1184, "rank": 61}, {"token": " legal", "probability": 0.0020185123413960764, "token_id": 5777, "rank": 62}, {"token": " honesty", "probability": 0.001957908814277866, "token_id": 47848, "rank": 63}, {"token": "First", "probability": 0.0019308273643696909, "token_id": 5338, "rank": 64}, {"token": " issues", "probability": 0.0018463117895258987, "token_id": 4714, "rank": 65}, {"token": " emotions", "probability": 0.0018337784003288362, "token_id": 21261, "rank": 66}, {"token": " future", "probability": 0.0018240354150045846, "token_id": 3853, "rank": 67}, {"token": " emotionally", "probability": 0.0018086971685576658, "token_id": 37583, "rank": 68}, {"token": "ought", "probability": 0.00180503125715272, "token_id": 2450, "rank": 69}, {"token": " together", "probability": 0.0017898770266604421, "token_id": 3786, "rank": 70}, {"token": " factors", "probability": 0.001777036347972271, "token_id": 9363, "rank": 71}, {"token": " norms", "probability": 0.0017760833010379647, "token_id": 39751, "rank": 72}, {"token": " long", "probability": 0.0017598088622513045, "token_id": 1293, "rank": 73}, {"token": " including", "probability": 0.0017510352840231988, "token_id": 2670, "rank": 74}, {"token": " communication", "probability": 0.0017356711260165972, "token_id": 10535, "rank": 75}, {"token": " everyone", "probability": 0.0017329158246043254, "token_id": 5019, "rank": 76}, {"token": " individual", "probability": 0.0017220271236525206, "token_id": 3842, "rank": 77}, {"token": " understand", "probability": 0.0017057607973467858, "token_id": 3535, "rank": 78}, {"token": " typically", "probability": 0.0016817486173480501, "token_id": 11136, "rank": 79}, {"token": " influenced", "probability": 0.0016439562412678653, "token_id": 27061, "rank": 80}, {"token": " across", "probability": 0.0016345996184809117, "token_id": 3941, "rank": 81}, {"token": " user", "probability": 0.0016322088120628144, "token_id": 1196, "rank": 82}, {"token": " soul", "probability": 0.0016286699385005706, "token_id": 13527, "rank": 83}, {"token": " find", "probability": 0.0016155628803367062, "token_id": 1477, "rank": 84}, {"token": " honest", "probability": 0.0016122585303662608, "token_id": 10745, "rank": 85}, {"token": " hurt", "probability": 0.0015958844986457088, "token_id": 12898, "rank": 86}, {"token": " dating", "probability": 0.0015790279786289233, "token_id": 4924, "rank": 87}, {"token": " conversation", "probability": 0.0015756002360039268, "token_id": 10435, "rank": 88}, {"token": " necessary", "probability": 0.0015669508011044151, "token_id": 5871, "rank": 89}, {"token": " societal", "probability": 0.0015608540791737769, "token_id": 58429, "rank": 90}, {"token": " acknowledge", "probability": 0.0015569069192008199, "token_id": 24645, "rank": 91}, {"token": " partners", "probability": 0.001536383445898296, "token_id": 8549, "rank": 92}, {"token": " finding", "probability": 0.0015315476168979646, "token_id": 9271, "rank": 93}, {"token": " depends", "probability": 0.0015087067536959234, "token_id": 13798, "rank": 94}, {"token": " communicate", "probability": 0.0015051908637244739, "token_id": 19032, "rank": 95}, {"token": " message", "probability": 0.001494022523471832, "token_id": 1943, "rank": 96}, {"token": " question", "probability": 0.0014909520230543985, "token_id": 3405, "rank": 97}, {"token": " others", "probability": 0.0014710996121930925, "token_id": 3800, "rank": 98}, {"token": " equality", "probability": 0.0014670915324703601, "token_id": 21777, "rank": 99}, {"token": " open", "probability": 0.0014614479382787, "token_id": 1787, "rank": 100}]}, {"name": "Religion & Theology", "color": "#2a78d6", "layer": 62, "segment": "thought", "n_questions": 20, "total_tokens_in_dist": 7417, "top_n_mass": 0.3076, "tokens": [{"token": "thought", "probability": 0.02219472786643488, "token_id": 60565, "rank": 1}, {"token": "'s", "probability": 0.012535569159239628, "token_id": 594, "rank": 2}, {"token": " God", "probability": 0.011959396938487148, "token_id": 4264, "rank": 3}, {"token": " within", "probability": 0.009062015899921493, "token_id": 2878, "rank": 4}, {"token": " important", "probability": 0.006490241961338401, "token_id": 2989, "rank": 5}, {"token": " Christianity", "probability": 0.004861138667142824, "token_id": 31086, "rank": 6}, {"token": " Holy", "probability": 0.00464806879221624, "token_id": 18710, "rank": 7}, {"token": " religious", "probability": 0.0045635240332435965, "token_id": 10381, "rank": 8}, {"token": " often", "probability": 0.004552915886443074, "token_id": 3545, "rank": 9}, {"token": " higher", "probability": 0.004528623662059449, "token_id": 5080, "rank": 10}, {"token": " prayer", "probability": 0.004423092903595281, "token_id": 22936, "rank": 11}, {"token": " directly", "probability": 0.00434724422556987, "token_id": 5961, "rank": 12}, {"token": " Christian", "probability": 0.004331973799615476, "token_id": 8876, "rank": 13}, {"token": " existence", "probability": 0.004160947924984073, "token_id": 13885, "rank": 14}, {"token": " first", "probability": 0.0039041109448724695, "token_id": 1156, "rank": 15}, {"token": "ly", "probability": 0.003816235581519548, "token_id": 398, "rank": 16}, {"token": " involves", "probability": 0.003776512837152466, "token_id": 17601, "rank": 17}, {"token": " Eid", "probability": 0.0035951541505992333, "token_id": 85744, "rank": 18}, {"token": " Paul", "probability": 0.0035808967010138477, "token_id": 6898, "rank": 19}, {"token": " Islamic", "probability": 0.0035418916641291125, "token_id": 15203, "rank": 20}, {"token": " regarding", "probability": 0.003496083267599996, "token_id": 8826, "rank": 21}, {"token": " Spirit", "probability": 0.003489449620292806, "token_id": 16899, "rank": 22}, {"token": " speaking", "probability": 0.003336127087127913, "token_id": 12094, "rank": 23}, {"token": " believers", "probability": 0.0033111194311546952, "token_id": 50913, "rank": 24}, {"token": " key", "probability": 0.0032659591174517533, "token_id": 1376, "rank": 25}, {"token": " let", "probability": 0.0032555387066906263, "token_id": 1077, "rank": 26}, {"token": " Christ", "probability": 0.003177508365555041, "token_id": 3686, "rank": 27}, {"token": " several", "probability": 0.0031546891517640176, "token_id": 3807, "rank": 28}, {"token": " according", "probability": 0.003107481308098109, "token_id": 4092, "rank": 29}, {"token": " Haj", "probability": 0.00308817575426397, "token_id": 83426, "rank": 30}, {"token": " belief", "probability": 0.0030833668877719876, "token_id": 16396, "rank": 31}, {"token": " rather", "probability": 0.0030330940062033265, "token_id": 4751, "rank": 32}, {"token": " without", "probability": 0.002936563703922011, "token_id": 2041, "rank": 33}, {"token": "—the", "probability": 0.002891460238170174, "token_id": 21677, "rank": 34}, {"token": " Bible", "probability": 0.0028693498364497907, "token_id": 16947, "rank": 35}, {"token": " chapter", "probability": 0.0028392236293525754, "token_id": 12453, "rank": 36}, {"token": " Islam", "probability": 0.002795962613989268, "token_id": 14910, "rank": 37}, {"token": " personal", "probability": 0.0027637324494110514, "token_id": 4345, "rank": 38}, {"token": " whether", "probability": 0.0027351417410232193, "token_id": 3425, "rank": 39}, {"token": " seen", "probability": 0.0027023735150427373, "token_id": 3884, "rank": 40}, {"token": " faith", "probability": 0.002697579098904877, "token_id": 9881, "rank": 41}, {"token": "1", "probability": 0.002668522535484695, "token_id": 16, "rank": 42}, {"token": " beliefs", "probability": 0.002635719873173333, "token_id": 20799, "rank": 43}, {"token": " power", "probability": 0.002569920549117289, "token_id": 2355, "rank": 44}, {"token": " need", "probability": 0.002487103463388016, "token_id": 1184, "rank": 45}, {"token": " specific", "probability": 0.0024562949718032996, "token_id": 3151, "rank": 46}, {"token": " considering", "probability": 0.002454442885566137, "token_id": 12831, "rank": 47}, {"token": " canon", "probability": 0.002379760926599658, "token_id": 43816, "rank": 48}, {"token": ">The", "probability": 0.002319196953600545, "token_id": 16357, "rank": 49}, {"token": " Jewish", "probability": 0.002270701067371932, "token_id": 13350, "rank": 50}, {"token": " texts", "probability": 0.0022659259386750663, "token_id": 21984, "rank": 51}, {"token": " towards", "probability": 0.002249358934413833, "token_id": 6974, "rank": 52}, {"token": " spiritual", "probability": 0.00221891605363213, "token_id": 17849, "rank": 53}, {"token": " soul", "probability": 0.002202847955703667, "token_id": 13527, "rank": 54}, {"token": " resurrection", "probability": 0.0022008703440599925, "token_id": 61432, "rank": 55}, {"token": " Muslims", "probability": 0.002199720967809499, "token_id": 19503, "rank": 56}, {"token": " question", "probability": 0.002192683953259637, "token_id": 3405, "rank": 57}, {"token": " empirical", "probability": 0.002181927750859055, "token_id": 45663, "rank": 58}, {"token": " rituals", "probability": 0.002169901068552118, "token_id": 56579, "rank": 59}, {"token": " philosophical", "probability": 0.002132100809013738, "token_id": 40803, "rank": 60}, {"token": "2", "probability": 0.002124091526979957, "token_id": 17, "rank": 61}, {"token": " ghosts", "probability": 0.00212011934618208, "token_id": 53840, "rank": 62}, {"token": " philosophy", "probability": 0.002114931921011515, "token_id": 19128, "rank": 63}, {"token": " wisdom", "probability": 0.0020776035429174765, "token_id": 23389, "rank": 64}, {"token": "ism", "probability": 0.002055490233256736, "token_id": 2142, "rank": 65}, {"token": "Reflect", "probability": 0.0020443474164719244, "token_id": 72789, "rank": 66}, {"token": " spirits", "probability": 0.0020390512934789435, "token_id": 30639, "rank": 67}, {"token": " evidence", "probability": 0.0020138265556935665, "token_id": 5904, "rank": 68}, {"token": " verse", "probability": 0.001955373974761432, "token_id": 32387, "rank": 69}, {"token": "ness", "probability": 0.0019539351673380926, "token_id": 2090, "rank": 70}, {"token": " different", "probability": 0.0019514486360134042, "token_id": 2155, "rank": 71}, {"token": " story", "probability": 0.001924969432153548, "token_id": 3364, "rank": 72}, {"token": " throughout", "probability": 0.0019249077041679282, "token_id": 6814, "rank": 73}, {"token": " teachings", "probability": 0.001913375004833089, "token_id": 44472, "rank": 74}, {"token": "ically", "probability": 0.0018936044070303286, "token_id": 2673, "rank": 75}, {"token": " depending", "probability": 0.0018885879706123285, "token_id": 11649, "rank": 76}, {"token": " Jesus", "probability": 0.0018738267066017202, "token_id": 10588, "rank": 77}, {"token": " lunar", "probability": 0.001873074877582002, "token_id": 56711, "rank": 78}, {"token": " consider", "probability": 0.0018719633950363902, "token_id": 2908, "rank": 79}, {"token": " receiving", "probability": 0.0018319478226157958, "token_id": 12308, "rank": 80}, {"token": "3", "probability": 0.0018318992523036364, "token_id": 18, "rank": 81}, {"token": " Saudi", "probability": 0.0018232276657215965, "token_id": 17904, "rank": 82}, {"token": " including", "probability": 0.001819226201115733, "token_id": 2670, "rank": 83}, {"token": "9", "probability": 0.001802454521725649, "token_id": 24, "rank": 84}, {"token": " based", "probability": 0.0018012659867858473, "token_id": 3118, "rank": 85}, {"token": " comes", "probability": 0.0017915891874585386, "token_id": 4041, "rank": 86}, {"token": " birth", "probability": 0.0017701489009991696, "token_id": 7194, "rank": 87}, {"token": " include", "probability": 0.0017635169619540938, "token_id": 2924, "rank": 88}, {"token": " across", "probability": 0.0017580935130760878, "token_id": 3941, "rank": 89}, {"token": " day", "probability": 0.001756059843186146, "token_id": 1899, "rank": 90}, {"token": " context", "probability": 0.0017486218107405302, "token_id": 2266, "rank": 91}, {"token": " scientific", "probability": 0.0017428049910315278, "token_id": 12344, "rank": 92}, {"token": " specifically", "probability": 0.0017403919075680604, "token_id": 11689, "rank": 93}, {"token": " religions", "probability": 0.0017210126829764597, "token_id": 43130, "rank": 94}, {"token": "'ll", "probability": 0.0017169770999422237, "token_id": 3278, "rank": 95}, {"token": " Testament", "probability": 0.00169204080970867, "token_id": 39114, "rank": 96}, {"token": " ethics", "probability": 0.0016893892017883446, "token_id": 30908, "rank": 97}, {"token": "伊斯兰", "probability": 0.0016834143216117362, "token_id": 115598, "rank": 98}, {"token": " guidance", "probability": 0.001683042532561491, "token_id": 18821, "rank": 99}, {"token": " Christians", "probability": 0.0016772958115009048, "token_id": 21410, "rank": 100}]}, {"name": "Science, Physics & Math", "color": "#a47be8", "layer": 62, "segment": "thought", "n_questions": 25, "total_tokens_in_dist": 9610, "top_n_mass": 0.2737, "tokens": [{"token": "thought", "probability": 0.022241045483839206, "token_id": 60565, "rank": 1}, {"token": " energy", "probability": 0.00875598316985636, "token_id": 4802, "rank": 2}, {"token": "'s", "probability": 0.007919764139838808, "token_id": 594, "rank": 3}, {"token": "1", "probability": 0.007582274786624785, "token_id": 16, "rank": 4}, {"token": " formula", "probability": 0.00533973616749843, "token_id": 14806, "rank": 5}, {"token": "'ll", "probability": 0.0053253104147991046, "token_id": 3278, "rank": 6}, {"token": " stimulus", "probability": 0.004995199245737658, "token_id": 38435, "rank": 7}, {"token": "2", "probability": 0.00483039419063377, "token_id": 17, "rank": 8}, {"token": " within", "probability": 0.004639563807152115, "token_id": 2878, "rank": 9}, {"token": " due", "probability": 0.004520802448748776, "token_id": 4152, "rank": 10}, {"token": " light", "probability": 0.004442084161722965, "token_id": 3100, "rank": 11}, {"token": " let", "probability": 0.004415992649003469, "token_id": 1077, "rank": 12}, {"token": " primarily", "probability": 0.0044078624244452665, "token_id": 15503, "rank": 13}, {"token": " equals", "probability": 0.004132907009001446, "token_id": 16819, "rank": 14}, {"token": "text", "probability": 0.003735660510766918, "token_id": 1318, "rank": 15}, {"token": " work", "probability": 0.0037050171788825443, "token_id": 975, "rank": 16}, {"token": " side", "probability": 0.0034683394367981406, "token_id": 3108, "rank": 17}, {"token": " stars", "probability": 0.003213326632227683, "token_id": 9759, "rank": 18}, {"token": " gam", "probability": 0.003119389061751304, "token_id": 9015, "rank": 19}, {"token": " explain", "probability": 0.0030700522198073327, "token_id": 10339, "rank": 20}, {"token": " square", "probability": 0.0030331266882468897, "token_id": 9334, "rank": 21}, {"token": " sand", "probability": 0.0029707263369014815, "token_id": 9278, "rank": 22}, {"token": "ly", "probability": 0.0029648445857868473, "token_id": 398, "rank": 23}, {"token": " chemical", "probability": 0.0028611451970165336, "token_id": 11483, "rank": 24}, {"token": " atoms", "probability": 0.002818046191659342, "token_id": 32199, "rank": 25}, {"token": " since", "probability": 0.0026938005534014623, "token_id": 2474, "rank": 26}, {"token": " equation", "probability": 0.0026538813547747286, "token_id": 23606, "rank": 27}, {"token": " basic", "probability": 0.0026317233225926144, "token_id": 6770, "rank": 28}, {"token": " different", "probability": 0.0025840077772378645, "token_id": 2155, "rank": 29}, {"token": " Earth", "probability": 0.0025408383991242824, "token_id": 9237, "rank": 30}, {"token": " two", "probability": 0.0025362229419298903, "token_id": 1378, "rank": 31}, {"token": " across", "probability": 0.002447125407333664, "token_id": 3941, "rank": 32}, {"token": " important", "probability": 0.002433917118315588, "token_id": 2989, "rank": 33}, {"token": " form", "probability": 0.002402329211866508, "token_id": 1352, "rank": 34}, {"token": " atmosphere", "probability": 0.002388358918238129, "token_id": 16566, "rank": 35}, {"token": "4", "probability": 0.002363767525483869, "token_id": 19, "rank": 36}, {"token": " processes", "probability": 0.0023504164532411613, "token_id": 11364, "rank": 37}, {"token": " gases", "probability": 0.002316711915091622, "token_id": 44512, "rank": 38}, {"token": " wind", "probability": 0.002300351919366738, "token_id": 9956, "rank": 39}, {"token": " hydrogen", "probability": 0.0022825407200064794, "token_id": 34684, "rank": 40}, {"token": " first", "probability": 0.0022803627702480114, "token_id": 1156, "rank": 41}, {"token": " terms", "probability": 0.00225855998316945, "token_id": 3793, "rank": 42}, {"token": "First", "probability": 0.0022500864107596317, "token_id": 5338, "rank": 43}, {"token": " involves", "probability": 0.002245245379781734, "token_id": 17601, "rank": 44}, {"token": " need", "probability": 0.002219066121046475, "token_id": 1184, "rank": 45}, {"token": " cell", "probability": 0.002210436773659634, "token_id": 2779, "rank": 46}, {"token": " area", "probability": 0.0021786157683795536, "token_id": 3082, "rank": 47}, {"token": " oxygen", "probability": 0.0021753390211027724, "token_id": 23552, "rank": 48}, {"token": " symbol", "probability": 0.0021603430791425045, "token_id": 7735, "rank": 49}, {"token": " unique", "probability": 0.002132189023453432, "token_id": 4911, "rank": 50}, {"token": " voltage", "probability": 0.002118017033753099, "token_id": 21720, "rank": 51}, {"token": " using", "probability": 0.002116600536162312, "token_id": 1667, "rank": 52}, {"token": " flow", "probability": 0.00211193863629538, "token_id": 6396, "rank": 53}, {"token": " consists", "probability": 0.002107343057166114, "token_id": 17167, "rank": 54}, {"token": " stands", "probability": 0.002106574975222495, "token_id": 13352, "rank": 55}, {"token": "H", "probability": 0.002084391366763126, "token_id": 39, "rank": 56}, {"token": " squared", "probability": 0.0020646703810892203, "token_id": 52263, "rank": 57}, {"token": " provided", "probability": 0.0020412060812302563, "token_id": 3897, "rank": 58}, {"token": " change", "probability": 0.0020185164209083842, "token_id": 2297, "rank": 59}, {"token": " step", "probability": 0.0020133451444573377, "token_id": 3019, "rank": 60}, {"token": " circuits", "probability": 0.001962071464493638, "token_id": 45021, "rank": 61}, {"token": " composed", "probability": 0.0019385842482876703, "token_id": 23415, "rank": 62}, {"token": " particles", "probability": 0.001888438951642557, "token_id": 18730, "rank": 63}, {"token": ">The", "probability": 0.0018838927185606488, "token_id": 16357, "rank": 64}, {"token": " typically", "probability": 0.0018326066689286007, "token_id": 11136, "rank": 65}, {"token": " simple", "probability": 0.0018127922160028653, "token_id": 4285, "rank": 66}, {"token": " bonded", "probability": 0.0018101542151348676, "token_id": 69141, "rank": 67}, {"token": " several", "probability": 0.0017984844511876813, "token_id": 3807, "rank": 68}, {"token": " gas", "probability": 0.0017803265978179883, "token_id": 6819, "rank": 69}, {"token": " recall", "probability": 0.00175788908511673, "token_id": 19091, "rank": 70}, {"token": " intensity", "probability": 0.0017542515210089583, "token_id": 20612, "rank": 71}, {"token": " mass", "probability": 0.0017479660431060449, "token_id": 3072, "rank": 72}, {"token": " position", "probability": 0.001695260233163446, "token_id": 2309, "rank": 73}, {"token": " cells", "probability": 0.001680934612078925, "token_id": 7761, "rank": 74}, {"token": " current", "probability": 0.0016759455389692337, "token_id": 1482, "rank": 75}, {"token": " importance", "probability": 0.0016621807608962352, "token_id": 12650, "rank": 76}, {"token": " define", "probability": 0.0016484726651560951, "token_id": 6979, "rank": 77}, {"token": " simply", "probability": 0.0016344470609160116, "token_id": 4936, "rank": 78}, {"token": " located", "probability": 0.0016094347916525067, "token_id": 7407, "rank": 79}, {"token": " formation", "probability": 0.0015957803493705444, "token_id": 18003, "rank": 80}, {"token": " electrical", "probability": 0.001588601909246719, "token_id": 19734, "rank": 81}, {"token": " used", "probability": 0.0015835039924209785, "token_id": 1483, "rank": 82}, {"token": "7", "probability": 0.0015601204217378902, "token_id": 22, "rank": 83}, {"token": " water", "probability": 0.0015556246452808492, "token_id": 3015, "rank": 84}, {"token": " via", "probability": 0.0015499246203147057, "token_id": 4566, "rank": 85}, {"token": " NH", "probability": 0.0015428414775087987, "token_id": 34831, "rank": 86}, {"token": " motion", "probability": 0.0015360282943363305, "token_id": 11379, "rank": 87}, {"token": "²", "probability": 0.0015290812954952906, "token_id": 29456, "rank": 88}, {"token": " molecules", "probability": 0.0015268311264946405, "token_id": 34615, "rank": 89}, {"token": " larger", "probability": 0.001526662835756937, "token_id": 8131, "rank": 90}, {"token": " add", "probability": 0.0015237967356942304, "token_id": 912, "rank": 91}, {"token": " ions", "probability": 0.0014932624786293098, "token_id": 64025, "rank": 92}, {"token": " refers", "probability": 0.0014917635300659494, "token_id": 19257, "rank": 93}, {"token": " speed", "probability": 0.0014706726263097178, "token_id": 4628, "rank": 94}, {"token": "v", "probability": 0.0014627018108047051, "token_id": 85, "rank": 95}, {"token": " complex", "probability": 0.0014606107811616792, "token_id": 6351, "rank": 96}, {"token": " H", "probability": 0.0014596811019489742, "token_id": 472, "rank": 97}, {"token": " represented", "probability": 0.0014448651373474325, "token_id": 15251, "rank": 98}, {"token": "—a", "probability": 0.0014336425620841459, "token_id": 27996, "rank": 99}, {"token": " along", "probability": 0.001419549428665283, "token_id": 3156, "rank": 100}]}, {"name": "Technology & Definitions", "color": "#1baf7a", "layer": 62, "segment": "thought", "n_questions": 40, "total_tokens_in_dist": 13288, "top_n_mass": 0.2538, "tokens": [{"token": "thought", "probability": 0.019021804108736516, "token_id": 60565, "rank": 1}, {"token": "'s", "probability": 0.010588596229346207, "token_id": 594, "rank": 2}, {"token": " within", "probability": 0.008298127383654725, "token_id": 2878, "rank": 3}, {"token": " using", "probability": 0.005835240211214716, "token_id": 1667, "rank": 4}, {"token": " used", "probability": 0.005135495255814847, "token_id": 1483, "rank": 5}, {"token": " let", "probability": 0.005091350322683016, "token_id": 1077, "rank": 6}, {"token": "ly", "probability": 0.004165271976602495, "token_id": 398, "rank": 7}, {"token": " designed", "probability": 0.004050210444685518, "token_id": 6188, "rank": 8}, {"token": " users", "probability": 0.0038318381652941323, "token_id": 3847, "rank": 9}, {"token": "ought", "probability": 0.00357224475984103, "token_id": 2450, "rank": 10}, {"token": " directly", "probability": 0.0033599312333300263, "token_id": 5961, "rank": 11}, {"token": " typically", "probability": 0.0033210369260847617, "token_id": 11136, "rank": 12}, {"token": " messages", "probability": 0.003258437472940101, "token_id": 6605, "rank": 13}, {"token": " without", "probability": 0.003251340585527353, "token_id": 2041, "rank": 14}, {"token": " based", "probability": 0.0032294988053886186, "token_id": 3118, "rank": 15}, {"token": " whether", "probability": 0.0031936497682975113, "token_id": 3425, "rank": 16}, {"token": " need", "probability": 0.0031377169081684884, "token_id": 1184, "rank": 17}, {"token": " involves", "probability": 0.003083919897420912, "token_id": 17601, "rank": 18}, {"token": " specific", "probability": 0.003080852697615639, "token_id": 3151, "rank": 19}, {"token": " system", "probability": 0.0030495641055918463, "token_id": 1849, "rank": 20}, {"token": " specifically", "probability": 0.0030217242872962865, "token_id": 11689, "rank": 21}, {"token": " since", "probability": 0.002963879894765709, "token_id": 2474, "rank": 22}, {"token": " code", "probability": 0.002918548257059727, "token_id": 2038, "rank": 23}, {"token": " secret", "probability": 0.0026866518234291885, "token_id": 6234, "rank": 24}, {"token": " lists", "probability": 0.0026334481461688505, "token_id": 11469, "rank": 25}, {"token": " number", "probability": 0.002611270175111543, "token_id": 1372, "rank": 26}, {"token": " step", "probability": 0.0025272797940785107, "token_id": 3019, "rank": 27}, {"token": " list", "probability": 0.0023517595434771306, "token_id": 1140, "rank": 28}, {"token": " Python", "probability": 0.002323374756307127, "token_id": 13027, "rank": 29}, {"token": " model", "probability": 0.0023102329830710037, "token_id": 1614, "rank": 30}, {"token": " security", "probability": 0.00228339104086057, "token_id": 4763, "rank": 31}, {"token": " Telegram", "probability": 0.002266199531140532, "token_id": 42963, "rank": 32}, {"token": " Docker", "probability": 0.0022604532887502407, "token_id": 40549, "rank": 33}, {"token": " consider", "probability": 0.0022435192333246125, "token_id": 2908, "rank": 34}, {"token": " Chat", "probability": 0.0022138066620078826, "token_id": 12853, "rank": 35}, {"token": " file", "probability": 0.002205656057214322, "token_id": 1034, "rank": 36}, {"token": " React", "probability": 0.0022032088117480194, "token_id": 3592, "rank": 37}, {"token": " use", "probability": 0.0022007786730205018, "token_id": 990, "rank": 38}, {"token": " depending", "probability": 0.0021805579207969028, "token_id": 11649, "rank": 39}, {"token": " might", "probability": 0.002166565162605464, "token_id": 2578, "rank": 40}, {"token": " means", "probability": 0.0021510484909899557, "token_id": 3363, "rank": 41}, {"token": " c", "probability": 0.002147020268920898, "token_id": 272, "rank": 42}, {"token": ">The", "probability": 0.0021390505271325225, "token_id": 16357, "rank": 43}, {"token": " technology", "probability": 0.0021143144796296753, "token_id": 5440, "rank": 44}, {"token": " module", "probability": 0.0020958160289676953, "token_id": 4688, "rank": 45}, {"token": " including", "probability": 0.0020935845636823, "token_id": 2670, "rank": 46}, {"token": "First", "probability": 0.002087206980046987, "token_id": 5338, "rank": 47}, {"token": " several", "probability": 0.0020526439721698666, "token_id": 3807, "rank": 48}, {"token": " first", "probability": 0.002028978018838665, "token_id": 1156, "rank": 49}, {"token": " database", "probability": 0.001955668546059137, "token_id": 4625, "rank": 50}, {"token": "1", "probability": 0.0019510760655604014, "token_id": 16, "rank": 51}, {"token": "'ll", "probability": 0.0019500096614875986, "token_id": 3278, "rank": 52}, {"token": " due", "probability": 0.0019496937329190364, "token_id": 4152, "rank": 53}, {"token": " applications", "probability": 0.001947001766888759, "token_id": 8357, "rank": 54}, {"token": " user", "probability": 0.0019387692326617832, "token_id": 1196, "rank": 55}, {"token": " steps", "probability": 0.0019096698115278702, "token_id": 7354, "rank": 56}, {"token": " someone", "probability": 0.0019096147352851902, "token_id": 4325, "rank": 57}, {"token": " important", "probability": 0.001903794229182364, "token_id": 2989, "rank": 58}, {"token": " null", "probability": 0.001900196625615794, "token_id": 845, "rank": 59}, {"token": " allows", "probability": 0.001893823587329545, "token_id": 6147, "rank": 60}, {"token": " across", "probability": 0.0018592317193361011, "token_id": 3941, "rank": 61}, {"token": " audio", "probability": 0.001827646032613151, "token_id": 7699, "rank": 62}, {"token": " email", "probability": 0.0018221096420840133, "token_id": 2551, "rank": 63}, {"token": " video", "probability": 0.0017882465188202967, "token_id": 2766, "rank": 64}, {"token": " often", "probability": 0.0017753733132285239, "token_id": 3545, "rank": 65}, {"token": " way", "probability": 0.0017601210104171902, "token_id": 1616, "rank": 66}, {"token": " Let", "probability": 0.0017499972000288295, "token_id": 6771, "rank": 67}, {"token": " data", "probability": 0.001745168350297755, "token_id": 821, "rank": 68}, {"token": " Tor", "probability": 0.001734066579180401, "token_id": 8444, "rank": 69}, {"token": " Dart", "probability": 0.0016930439504770835, "token_id": 48097, "rank": 70}, {"token": "2", "probability": 0.001670922907621939, "token_id": 17, "rank": 71}, {"token": " context", "probability": 0.0016639712519168994, "token_id": 2266, "rank": 72}, {"token": " delete", "probability": 0.0016593453362665684, "token_id": 3698, "rank": 73}, {"token": " provide", "probability": 0.0016584739226866677, "token_id": 3410, "rank": 74}, {"token": " access", "probability": 0.0016105400656485185, "token_id": 2615, "rank": 75}, {"token": " sub", "probability": 0.0016051607181063673, "token_id": 1186, "rank": 76}, {"token": " multiple", "probability": 0.0016003633834816271, "token_id": 5248, "rank": 77}, {"token": " called", "probability": 0.0015981465706466508, "token_id": 2598, "rank": 78}, {"token": " either", "probability": 0.0015799676885616648, "token_id": 2987, "rank": 79}, {"token": " macOS", "probability": 0.00156842642229857, "token_id": 67178, "rank": 80}, {"token": " method", "probability": 0.0015671557193188187, "token_id": 1714, "rank": 81}, {"token": " software", "probability": 0.0015633389828339727, "token_id": 3162, "rank": 82}, {"token": " tables", "probability": 0.0015581885156749646, "token_id": 12632, "rank": 83}, {"token": " refers", "probability": 0.0015351413094470676, "token_id": 19257, "rank": 84}, {"token": "3", "probability": 0.0015295198062649587, "token_id": 18, "rank": 85}, {"token": " process", "probability": 0.001529275799276023, "token_id": 1882, "rank": 86}, {"token": " Sol", "probability": 0.0015118616861026749, "token_id": 11473, "rank": 87}, {"token": " uses", "probability": 0.0015062877060384899, "token_id": 5711, "rank": 88}, {"token": " prime", "probability": 0.0015060505892928668, "token_id": 10250, "rank": 89}, {"token": " compared", "probability": 0.0015007150203943634, "token_id": 7707, "rank": 90}, {"token": " operates", "probability": 0.00148491304439162, "token_id": 26057, "rank": 91}, {"token": " built", "probability": 0.0014630381038832627, "token_id": 5798, "rank": 92}, {"token": " web", "probability": 0.0014493816011103794, "token_id": 3482, "rank": 93}, {"token": " effectively", "probability": 0.0014352940057903514, "token_id": 13444, "rank": 94}, {"token": " types", "probability": 0.001431912000450175, "token_id": 4494, "rank": 95}, {"token": " However", "probability": 0.0014126166804472465, "token_id": 4354, "rank": 96}, {"token": " provided", "probability": 0.0014076710484980989, "token_id": 3897, "rank": 97}, {"token": "problems", "probability": 0.0014072447017972303, "token_id": 95340, "rank": 98}, {"token": " account", "probability": 0.0014066376477969986, "token_id": 2692, "rank": 99}, {"token": " write", "probability": 0.0014000558507540413, "token_id": 3270, "rank": 100}]}];
+const CAT_MAP = Object.fromEntries(DATA.map(c => [c.name, c]));
+
+const state = {
+  selA: DATA[0] ? DATA[0].name : null,
+  selB: DATA[1] ? DATA[1].name : null,
+  compare: false,
+  view: 'cloud',
+  topN: 50,
+  search: '',
+};
+
+// ---- Utilities ----
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtToken(t) {
+  if (t === ' ') return '·';
+  if (t === '\n') return '\u21b5';
+  if (t.startsWith(' ')) return '·' + t.slice(1);
+  return t;
+}
+
+function hexRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return r+','+g+','+b;
+}
+
+function logScale(val, minV, maxV) {
+  if (minV <= 0 || maxV <= 0 || minV === maxV) return 0.5;
+  return (Math.log(val) - Math.log(minV)) / (Math.log(maxV) - Math.log(minV));
+}
+
+function matchesSearch(tokenText) {
+  if (!state.search) return true;
+  return tokenText.toLowerCase().includes(state.search.toLowerCase());
+}
+
+// ---- Cloud ----
+
+function renderCloud(tokens, color, container, sharedSet) {
+  const sliced = tokens.slice(0, state.topN);
+  if (!sliced.length) { container.innerHTML = '<div style="padding:40px;color:var(--text-3)">No tokens.</div>'; return; }
+  const maxP = sliced[0].probability;
+  const minP = sliced[sliced.length - 1].probability;
+  const rgb = hexRgb(color);
+
+  const cloud = document.createElement('div');
+  cloud.className = 'cloud';
+
+  sliced.forEach(({token, probability, rank}) => {
+    const t = logScale(probability, minP, maxP);
+    const size = (10 + t * 44).toFixed(1);
+    const weight = t > 0.65 ? 600 : t > 0.35 ? 500 : 400;
+    const opBg = (0.1 + t * 0.2).toFixed(2);
+    const opBorder = (0.15 + t * 0.35).toFixed(2);
+    const opText = (0.5 + t * 0.5).toFixed(2);
+    const isShared = sharedSet && sharedSet.has(token);
+    const matches = matchesSearch(token);
+
+    const el = document.createElement('span');
+    el.className = 'cloud-token' +
+      (isShared ? ' shared' : '') +
+      (!matches && state.search ? ' dimmed' : '');
+    el.textContent = fmtToken(token);
+    el.style.fontSize = size + 'px';
+    el.style.fontWeight = weight;
+    el.style.background = isShared
+      ? 'rgba(255,255,255,0.12)'
+      : 'rgba('+rgb+','+opBg+')';
+    el.style.color = isShared
+      ? '#fff'
+      : 'rgba('+rgb+','+opText+')';
+    el.style.borderColor = isShared
+      ? 'rgba(255,255,255,0.3)'
+      : 'rgba('+rgb+','+opBorder+')';
+    el.dataset.tip = '#'+rank+'  '+probability.toExponential(4)+(isShared?' · shared':'');
+    cloud.appendChild(el);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(cloud);
+}
+
+// ---- Bars ----
+
+function renderBars(tokens, color, container, sharedSet) {
+  const sliced = tokens.slice(0, state.topN);
+  if (!sliced.length) { container.innerHTML = '<div style="padding:40px;color:var(--text-3)">No tokens.</div>'; return; }
+  const maxP = sliced[0].probability;
+  const rgb = hexRgb(color);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'bars';
+
+  sliced.forEach(({token, probability, rank}) => {
+    const pct = (probability / maxP * 100).toFixed(2);
+    const isShared = sharedSet && sharedSet.has(token);
+    const matches = matchesSearch(token);
+    const barColor = isShared ? 'rgba(255,255,255,0.45)' : 'rgba('+rgb+',0.75)';
+
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML =
+      '<span class="bar-rank">'+rank+'</span>'+
+      '<span class="bar-token'+((!matches&&state.search)?' dimmed':'')+'">'+esc(fmtToken(token))+'</span>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'+
+      '<span class="bar-prob">'+probability.toExponential(3)+'</span>';
+    wrap.appendChild(row);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(wrap);
+}
+
+// ---- Table ----
+
+function renderTable(tokens, color, container, sharedSet) {
+  const sliced = tokens.slice(0, state.topN);
+  if (!sliced.length) { container.innerHTML = '<div style="padding:40px;color:var(--text-3)">No tokens.</div>'; return; }
+  const maxP = sliced[0].probability;
+  const rgb = hexRgb(color);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+
+  const table = document.createElement('table');
+  table.className = 'gt-table';
+  table.innerHTML =
+    '<thead><tr>' +
+    '<th>#</th><th>Token</th><th>Probability</th><th style="width:140px">Rel. weight</th>' +
+    '</tr></thead>';
+
+  const tbody = document.createElement('tbody');
+  sliced.forEach(({token, probability, rank}) => {
+    const pct = (probability / maxP * 100).toFixed(2);
+    const isShared = sharedSet && sharedSet.has(token);
+    const matches = matchesSearch(token);
+    const bgColor = isShared ? 'rgba(255,255,255,0.14)' : 'rgba('+rgb+',0.18)';
+    const textColor = isShared ? '#fff' : 'rgba('+rgb+',0.9)';
+    const barColor = isShared ? 'rgba(255,255,255,0.5)' : 'rgba('+rgb+',0.65)';
+
+    const tr = document.createElement('tr');
+    if (!matches && state.search) tr.className = 'dimmed';
+    tr.innerHTML =
+      '<td style="color:var(--text-3)">'+rank+'</td>'+
+      '<td><span class="token-pill" style="background:'+bgColor+';color:'+textColor+'">'+esc(fmtToken(token))+'</span>'+
+        (isShared ? ' <span style="font-size:10px;color:var(--text-3)">shared</span>' : '')+'</td>'+
+      '<td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2)">'+probability.toExponential(4)+'</td>'+
+      '<td><div class="mini-bar-wrap"><div class="mini-bar" style="width:'+pct+'%;background:'+barColor+'"></div></div></td>';
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  container.innerHTML = '';
+  container.appendChild(wrap);
+}
+
+// ---- Dispatch ----
+
+function renderViz(tokens, color, container, sharedSet) {
+  if (state.view === 'cloud') renderCloud(tokens, color, container, sharedSet);
+  else if (state.view === 'bars') renderBars(tokens, color, container, sharedSet);
+  else renderTable(tokens, color, container, sharedSet);
+}
+
+function getTokenSet(catName) {
+  const cat = CAT_MAP[catName];
+  if (!cat) return new Set();
+  return new Set(cat.tokens.slice(0, state.topN).map(t => t.token));
+}
+
+// ---- Controls HTML ----
+
+function ctrlsHtml(showSearch) {
+  const topNOpts = [10,20,30,50,75,100]
+    .map(n => '<option value="'+n+'"'+(state.topN===n?' selected':'')+'>'+n+'</option>')
+    .join('');
+  return (
+    '<div class="controls">'+
+    '<div class="view-tabs">'+
+    '<button class="view-tab'+(state.view==='cloud'?' active':'')+'" data-view="cloud">&#9729; Cloud</button>'+
+    '<button class="view-tab'+(state.view==='bars'?' active':'')+'" data-view="bars">&#9646; Bars</button>'+
+    '<button class="view-tab'+(state.view==='table'?' active':'')+'" data-view="table">&#8801; Table</button>'+
+    '</div>'+
+    '<div class="ctrl-group">Show top <select class="ctrl-select topn-sel">'+topNOpts+'</select> tokens</div>'+
+    (showSearch ? '<div class="ctrl-group"><input class="search-input" placeholder="Filter tokens…" value="'+esc(state.search)+'"></div>' : '')+
+    '</div>'
+  );
+}
+
+function bindControls(root) {
+  root.querySelectorAll('.view-tab').forEach(btn => {
+    btn.addEventListener('click', () => { state.view = btn.dataset.view; render(); });
+  });
+  root.querySelectorAll('.topn-sel').forEach(sel => {
+    sel.addEventListener('change', e => { state.topN = parseInt(e.target.value); render(); });
+  });
+  const searchEl = root.querySelector('.search-input');
+  if (searchEl) {
+    searchEl.addEventListener('input', e => { state.search = e.target.value; render(); });
+    // Keep focus after re-render
+    searchEl.addEventListener('focus', () => { searchEl._focused = true; });
+  }
+}
+
+// ---- Single view ----
+
+function renderSingle(content) {
+  const cat = CAT_MAP[state.selA];
+  if (!cat) { content.innerHTML = '<div style="padding:40px;color:var(--text-3)">Select a category.</div>'; return; }
+
+  const coveragePct = (cat.top_n_mass * 100).toFixed(1);
+  const topTokens = cat.tokens.slice(0, state.topN);
+  const shownMass = (topTokens.reduce((s,t) => s+t.probability, 0) * 100).toFixed(1);
+
+  content.innerHTML =
+    '<div class="panel" id="single-panel">'+
+    '<div class="panel-header">'+
+    '<div class="panel-title" style="color:'+cat.color+'">'+esc(cat.name)+'</div>'+
+    '<div class="panel-meta">'+
+    '<span class="meta-badge">Layer '+cat.layer+'</span>'+
+    '<span class="meta-badge">Segment: '+cat.segment+'</span>'+
+    '<span class="meta-badge">'+cat.n_questions+' questions</span>'+
+    '<span class="meta-badge">'+cat.total_tokens_in_dist+' unique tokens</span>'+
+    '<span class="meta-badge coverage" style="border-color:'+cat.color+'40;color:'+cat.color+'">'+
+      'Showing top '+state.topN+' &bull; covers '+shownMass+'% of mass</span>'+
+    '</div>'+
+    '</div>'+
+    ctrlsHtml(true)+
+    '<div class="viz-area" id="viz-area"></div>'+
+    '</div>';
+
+  renderViz(cat.tokens, cat.color, document.getElementById('viz-area'), null);
+  bindControls(document.getElementById('single-panel'));
+}
+
+// ---- Compare view ----
+
+function renderCompare(content) {
+  const catA = CAT_MAP[state.selA];
+  const catB = CAT_MAP[state.selB];
+
+  const opts = (sel) => DATA.map(c =>
+    '<option value="'+esc(c.name)+'"'+(c.name===sel?' selected':'')+'>'+esc(c.name)+'</option>'
+  ).join('');
+
+  const topNOpts = [10,20,30,50,75,100]
+    .map(n => '<option value="'+n+'"'+(state.topN===n?' selected':'')+'>'+n+'</option>')
+    .join('');
+
+  content.innerHTML =
+    '<div class="compare-layout">'+
+
+    // Left panel
+    '<div class="compare-panel" id="cpanel-a">'+
+    '<div class="compare-selector">'+
+    '<div class="cat-dot" style="background:'+(catA?catA.color:'#888')+'"></div>'+
+    '<select class="compare-select" id="sel-a">'+opts(state.selA)+'</select>'+
+    '</div>'+
+    '<div class="shared-legend"><div class="shared-swatch"></div>Outlined = also in right panel's top '+state.topN+'</div>'+
+    '<div class="controls">'+
+    '<div class="view-tabs">'+
+    '<button class="view-tab'+(state.view==='cloud'?' active':'')+'" data-view="cloud">&#9729; Cloud</button>'+
+    '<button class="view-tab'+(state.view==='bars'?' active':'')+'" data-view="bars">&#9646; Bars</button>'+
+    '<button class="view-tab'+(state.view==='table'?' active':'')+'" data-view="table">&#8801; Table</button>'+
+    '</div>'+
+    '<div class="ctrl-group">Top <select class="ctrl-select topn-sel">'+topNOpts+'</select></div>'+
+    '<div class="ctrl-group"><input class="search-input" placeholder="Filter…" value="'+esc(state.search)+'"></div>'+
+    '</div>'+
+    '<div class="viz-area" id="viz-a"></div>'+
+    '</div>'+
+
+    // Right panel
+    '<div class="compare-panel" id="cpanel-b">'+
+    '<div class="compare-selector">'+
+    '<div class="cat-dot" style="background:'+(catB?catB.color:'#888')+'"></div>'+
+    '<select class="compare-select" id="sel-b">'+opts(state.selB)+'</select>'+
+    '</div>'+
+    '<div class="shared-legend"><div class="shared-swatch"></div>Outlined = also in left panel's top '+state.topN+'</div>'+
+    '<div class="controls" style="justify-content:flex-end">'+
+    '<span style="font-size:11px;color:var(--text-3)">View &amp; top-N synced ←</span>'+
+    '</div>'+
+    '<div class="viz-area" id="viz-b"></div>'+
+    '</div>'+
+    '</div>';
+
+  const tokSetA = catA ? getTokenSet(state.selA) : new Set();
+  const tokSetB = catB ? getTokenSet(state.selB) : new Set();
+
+  if (catA) renderViz(catA.tokens, catA.color, document.getElementById('viz-a'), tokSetB);
+  if (catB) renderViz(catB.tokens, catB.color, document.getElementById('viz-b'), tokSetA);
+
+  // Bind
+  document.querySelectorAll('.view-tab').forEach(btn => {
+    btn.addEventListener('click', () => { state.view = btn.dataset.view; render(); });
+  });
+  document.querySelectorAll('.topn-sel').forEach(sel => {
+    sel.addEventListener('change', e => { state.topN = parseInt(e.target.value); render(); });
+  });
+  document.querySelectorAll('.search-input').forEach(inp => {
+    inp.addEventListener('input', e => { state.search = e.target.value; render(); });
+  });
+  document.getElementById('sel-a').addEventListener('change', e => {
+    state.selA = e.target.value;
+    document.querySelector('.cat-dot', '#cpanel-a').style.background = CAT_MAP[state.selA]?.color || '#888';
+    render();
+  });
+  document.getElementById('sel-b').addEventListener('change', e => {
+    state.selB = e.target.value;
+    render();
+  });
+}
+
+// ---- Top-level render ----
+
+function render() {
+  // Sidebar active state
+  document.querySelectorAll('.cat-item').forEach(el => {
+    const isActive = state.compare
+      ? (el.dataset.name === state.selA || el.dataset.name === state.selB)
+      : el.dataset.name === state.selA;
+    el.classList.toggle('active', isActive);
+  });
+
+  const content = document.getElementById('content');
+  if (state.compare) renderCompare(content);
+  else renderSingle(content);
+
+  // Restore search focus if needed
+  const searchEl = document.querySelector('.search-input');
+  if (searchEl && searchEl._focused) {
+    searchEl.focus();
+    const len = searchEl.value.length;
+    searchEl.setSelectionRange(len, len);
+  }
+}
+
+// ---- Tooltip ----
+
+document.addEventListener('mouseover', e => {
+  const el = e.target.closest('[data-tip]');
+  const tip = document.getElementById('tooltip');
+  if (el) {
+    tip.textContent = el.dataset.tip;
+    tip.style.display = 'block';
+  } else {
+    tip.style.display = 'none';
+  }
+});
+document.addEventListener('mousemove', e => {
+  const tip = document.getElementById('tooltip');
+  if (tip.style.display === 'block') {
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top  = (e.clientY + 14) + 'px';
+  }
+});
+document.addEventListener('mouseout', e => {
+  if (!e.target.closest('[data-tip]')) {
+    document.getElementById('tooltip').style.display = 'none';
+  }
+});
+
+// ---- Init ----
+
+function init() {
+  const catList = document.getElementById('cat-list');
+  DATA.forEach(cat => {
+    const li = document.createElement('li');
+    li.className = 'cat-item';
+    li.dataset.name = cat.name;
+    li.style.setProperty('--cat-color', cat.color);
+    li.innerHTML =
+      '<div class="cat-dot" style="background:'+cat.color+'"></div>'+
+      '<span class="cat-name">'+esc(cat.name)+'</span>';
+    li.addEventListener('click', () => {
+      if (state.compare) {
+        state.selA = cat.name;
+      } else {
+        state.selA = cat.name;
+      }
+      state.compare = false;
+      document.getElementById('compare-btn').classList.remove('active');
+      render();
+    });
+    catList.appendChild(li);
+  });
+
+  document.getElementById('compare-btn').addEventListener('click', function() {
+    state.compare = !state.compare;
+    this.classList.toggle('active', state.compare);
+    render();
+  });
+
+  render();
+}
+
+// Script is placed at end of <body>, so DOM is already ready — call directly.
+init();
+</script>
+</body>
+</html>
