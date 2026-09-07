@@ -4,3 +4,4 @@ jspace_prompts*/
 .venv*/
 *.zip
 *.log
+get-pip.py

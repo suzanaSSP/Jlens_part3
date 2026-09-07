@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Timed pilot run of the Qwen3.5-122B-A10B-FP8 J-Lens pipeline.
 
 Runs the first N (default 2) religion-ground-truth training questions
