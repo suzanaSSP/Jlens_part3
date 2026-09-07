@@ -1,4 +1,3 @@
-from __future__ import annotations
 """Timed pilot run of the Qwen3.5-122B-A10B-FP8 J-Lens pipeline.
 
 Runs the first N (default 2) religion-ground-truth training questions
@@ -29,6 +28,8 @@ watch progress live, e.g.:
     .venv_jl3/bin/python3 -u -m scripts.get_jlens_122b_pilot --n 1 \
         >> run_get_jlens_122b_pilot.log 2>&1
 """
+
+from __future__ import annotations
 
 import argparse
 import glob
