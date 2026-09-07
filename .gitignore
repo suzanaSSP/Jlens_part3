@@ -3,3 +3,4 @@ jspace_prompts*/
 *.csv
 .venv*/
 *.zip
+*.log

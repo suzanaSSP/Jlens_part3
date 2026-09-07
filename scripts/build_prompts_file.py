@@ -9,7 +9,7 @@ output file exists, so this can be regenerated / re-run safely.
 """
 import json
 
-with open("ground_truth_pool.json") as f:
+with open("ground_truths/ground_truth_pool.json") as f:
     pool = json.load(f)
 
 with open("non_benchmark_961.json") as f:

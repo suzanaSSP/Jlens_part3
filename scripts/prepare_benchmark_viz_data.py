@@ -26,7 +26,7 @@ from scripts.bootstrap_ground_truth import (
 WINDOW_SIZE = 10
 AGG_GRID = list(range(0, 101, 5))
 
-with open("ground_truth_pool.json") as f:
+with open("ground_truths/ground_truth_pool.json") as f:
     POOL = json.load(f)
 with open("benchmark_questions.json") as f:
     ALL_QUESTIONS = [q for q in json.load(f) if str(q["id"]) != "nan"]

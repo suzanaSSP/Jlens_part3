@@ -74,7 +74,7 @@ def n_grid_for(pool_size):
     actually has (e.g. 40 -> [10,20,30,40], 20 -> [5,10,15,20])."""
     return sorted({round(pool_size * frac) for frac in (0.25, 0.5, 0.75, 1.0)})
 
-with open("ground_truth_pool.json") as f:
+with open("ground_truths/ground_truth_pool.json") as f:
     POOL = json.load(f)
 
 

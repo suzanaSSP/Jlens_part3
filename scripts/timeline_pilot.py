@@ -40,7 +40,7 @@ QUESTION_ID = "588"
 HIGHLIGHT_CATEGORY = "Religion & Theology"
 WINDOW_SIZE = 10
 
-with open("ground_truth_pool.json") as f:
+with open("ground_truths/ground_truth_pool.json") as f:
     POOL = json.load(f)
 
 

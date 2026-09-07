@@ -44,3 +44,24 @@ cd .. && .venv_jl3/bin/python3 get_jlens.py >> run_get_jlens.log 2>&1
 # 4. Build the ground truths — now one JSON per category under
 #    data/ground_truths/, e.g. data/ground_truths/grief_loss_death.json
 cd data && python3 build_ground_truths.py
+
+The 112B jlens model is bigger and uses FP8 for training for greater precision.
+But the V100 have a capacity of 7.0, which is less than what a model in fp8 needs.
+So it transforms all its weights to bf16, which takes forever. I've been trying to run 1 question for three days and nothing :(
+
+Update: found two likely causes of the silent multi-day stall — GPU 0 on
+rainbow is marked dying (ECC errors, see
+/mnt/pccfs2/backed_up/models/DONT_USE_GPU_0_ON_RAINBOW) but the old script
+didn't know to skip it, and the fixed 200GB CPU-offload budget could
+oversubscribe real RAM on this shared machine (swap was found fully
+saturated). get_jlens_122b_pilot.py now excludes marked-unhealthy GPUs,
+sizes the CPU offload budget off actual free RAM at runtime, and prints a
+heartbeat every 30s during model load / generation so a stall is visible
+instead of silent. (Confirmed there's no way to avoid the fp8->bf16 dequant
+on V100 -- transformers hardcodes that fallback below compute capability
+8.9 and ignores a passed-in bitsandbytes quantization_config since the
+checkpoint already declares its own.)
+
+# Pilot run, 1 question, logged so progress is visible:
+.venv_jl3/bin/python3 -u -m scripts.get_jlens_122b_pilot --n 1 \
+    >> run_get_jlens_122b_pilot.log 2>&1

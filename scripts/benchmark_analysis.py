@@ -56,7 +56,7 @@ from scripts.bootstrap_ground_truth import (
 WINDOW_SIZE = 10
 AGG_GRID = list(range(0, 101, 5))  # common grid for averaging across questions
 
-with open("ground_truth_pool.json") as f:
+with open("ground_truths/ground_truth_pool.json") as f:
     POOL = json.load(f)
 with open("benchmark_pilot_ids.json") as f:
     PILOT = json.load(f)

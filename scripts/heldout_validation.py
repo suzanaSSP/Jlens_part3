@@ -35,7 +35,7 @@ from scripts.bootstrap_ground_truth import (
 
 JSPACE_DIR = "../jspace_prompts"
 
-with open("ground_truth_pool.json") as f:
+with open("ground_truths/ground_truth_pool.json") as f:
     POOL = json.load(f)
 
 # Fixed order, matching timeline_pilot.py's CATEGORY_STYLES slots.

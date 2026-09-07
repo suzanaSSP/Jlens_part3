@@ -43,7 +43,7 @@ with open("non_benchmark_961.json") as f:
     all_questions = json.load(f)
 
 try:
-    with open("ground_truth_pool.json") as f:
+    with open("ground_truths/ground_truth_pool.json") as f:
         pool = json.load(f)
 except FileNotFoundError:
     pool = {}
@@ -64,7 +64,7 @@ for category, train_n in CATEGORY_CONFIG.items():
     print(f"{category}: {len(cat_questions)} total -> "
           f"{len(train)} train / {len(heldout)} held-out")
 
-with open("ground_truth_pool.json", "w") as f:
+with open("ground_truths/ground_truth_pool.json", "w") as f:
     json.dump(pool, f, indent=2)
 
-print("Wrote data/ground_truth_pool.json")
+print("Wrote data/ground_truths/ground_truth_pool.json")
