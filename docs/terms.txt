@@ -1,0 +1,22 @@
+ - similarity = 1 - JS Divergence 
+    Easier to visualize. A JS divergence close to 1 means it's very different, 
+    but when I look at a number close to 1 I think it means that the distributions are very similar. So I just flipped them to make sense.
+
+- delta = similarity - baseline
+    A lot of the categories have the same common tokens. 
+    The baseline it made up of the things in common in the distributions of Law, Politics & Government, Science, Physics & Math, and Teachnology distributions
+    The category's similarity score minus this baseline removes the common tokens similarity to refine the specific category's similarity
+
+- Window distribution
+    When calculate the JS divergence for each position, the results come very spiky. 
+    To smooth things out we use a window, where we get the distrbution mean for 10 positions and compute the distribution differnce from the category's GT from there.
+    Then the next window moves forward one, so let's say it start at 1-10, next window is 2-11
+- Adjusted = similarity - category baseline
+    How adjusted is calculated:
+    seven_five_one= df_cat_presence[(df_cat_presence['qid']==751) & (df_cat_presence['segment'] == 'thought')]
+    thought_segment = df_cat_presence[df_cat_presence['segment'] == 'thought']
+    adjusted = seven_five_one['raw__Family Duty & Obligations'].iloc[0] - thought_segment['raw__Family Duty & Obligations'].mean()
+
+    There is a first-person bias, where questions relating to personal advice tended to go towards topics like Depression, etc. To cover for this bias this metric is created. 
+
+

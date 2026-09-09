@@ -52,3 +52,4 @@ most of the ground truth distributions overlap. So when computing the difference
 That's because most distributions overlap in same token words. To avoid that a baseline mean was created, and that is subtracted from the main category distribution. 
 The baseline mean was created by finding the mean similarity baseline of Law/Politics/Government/History, Technology & Definitions, Science/Physics/Math
 Chosen because they're presumed to have no plausible category-specific content in these moral-reasoning answers. Subtracting that mean removes the shared/generic component, leaving what's specific to the category in question. 
+
