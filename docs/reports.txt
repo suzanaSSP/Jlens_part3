@@ -1,0 +1,7 @@
+Today's report (9/9/26)
+
+Understood more how Claude was analysis my data. I wrote it down in 'now_it_makes_sense.txt'. Claude found a bias where personal advice questions tend to certain categories.
+Claude saw that as a bug, but I thought that was an interesting finding. I had it plot it out. Depression, and Marriage categories were dominating everything. 
+To remove this bias, I subtracted from the similarity the baseline of each category, so the mean similarity of each category from each segment. 
+I also had Claude plot it and it looks good.
+For next time: Do a more streamgraph analysis. I want to compare these values based on something. Try to find the unexplained categories and create a streamgraph based on the JS Divergence.
