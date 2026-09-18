@@ -19,4 +19,7 @@
 
     There is a first-person bias, where questions relating to personal advice tended to go towards topics like Depression, etc. To cover for this bias this metric is created. 
 
-
+- Ground Truths
+    Let's say you run 30 religious questions through J-space. Average out the probability distrbution of the tokens in the Jspace.
+    Create a distribution out of it, you now have a Ground Truth Religious Distribution. This means that this is an "ideal" representation of religion in the Jspace. 
+    This can be done to all the categories. If you take the KL Divergence of a distribution X and this religious GT, that difference is how similar distribution X is to the religious GT.  
