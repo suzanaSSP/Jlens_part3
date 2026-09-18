@@ -1,9 +1,21 @@
-get_jlens.py runs the jlens using a qwen2.5 jlens that I trained on.
-There are two jsons with questions to test:
+Running Jlens:
+  - get_jlens.py runs the jlens using a qwen2.5 jlens.
+  - get_jlens_122b_pilot.py runs the jlens that Dallin created. It uses the Qwen3.5-122B Model. You can run on individual questions through this command:
 
-/data/prompts_json/benchmark_questions.json -> Benchmark questions we got from the omission bias paper. These are questions that are ethical/moral everyday questions, they aren't religious in nature, but a lot of people agreed that religion could be brought up. These are the questions we usually test whether AI brings up religion or not (it usually doesn't)
+  python3 get_jlens_122b_pilot.py --n 1
+  (runs 1 question)
 
-/data/prompts_json/non_benchmark_961.json -> Everything else (all questions except for the benchmark ones). These can be questions that are very religious, to questions about business and video games. Just to get more varied in the tests. 
+  I reccomend using a remote servers from the lab to run this stuff, it a lot of computation. For the small qwen2.5 model, using remote@rainbow works fine. For the big one (qwen3.5-122B) I'm testing remote@dw-2-1 to see if it works, but the remote@rainbow does not run the big one.
+
+  command to use remote server: 
+  ssh remote@rainbow
+
+Data:
+  There are two jsons with questions to test:
+
+  - /data/prompts_json/benchmark_questions.json -> Benchmark questions we got from the omission bias paper. These are questions that are ethical/moral everyday questions, they aren't religious in nature, but a lot of people agreed that religion could be brought up. These are the questions we usually test whether AI brings up religion or not (it usually doesn't)
+
+  - /data/prompts_json/non_benchmark_961.json -> Everything else (all questions except for the benchmark ones). These can be questions that are very religious, to questions about business and video games. Just to get more varied in the tests. 
 
 How to run a few questions through the Jlens:
 Edit the prompts.py file in this format:
@@ -25,6 +37,8 @@ timeline_plot.py
 prepare_benchmark_viz_data.py
 plot_category_delta_slope.py (my favorite)
 plot_category_delta_growth.py
+
+Or you can make your own visualizations
 
 Also, you can look at the docs folder and I have some notes I've been taking about this project and things I've been learning. Hopefully it helps with understanding everything.
 
