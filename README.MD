@@ -2,6 +2,11 @@ Running Jlens:
   - get_jlens.py runs the jlens using a qwen2.5 jlens.
   - get_jlens_122b_pilot.py runs the jlens that Dallin created. It uses the Qwen3.5-122B Model. You can run on individual questions through this command:
 
+You may need to install a few packages like torch and transformers. You might also need to install the Anthropic Jlens package, which you can do with this command:
+
+  pip install git+https://github.com/anthropics/jacobian-lens.git
+
+Then run script: 
   python3 get_jlens_122b_pilot.py --n 1
   (runs 1 question)
 
